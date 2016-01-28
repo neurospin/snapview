@@ -1,0 +1,4 @@
+"""cubicweb-snapview application package
+
+
+"""

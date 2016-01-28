@@ -1,0 +1,97 @@
+.hc_container {
+    width: 100%;
+}
+
+div.dataTables_wrapper {
+    width: 100%;
+    margin: 0 auto;
+}
+
+div.DTFC_LeftBodyLiner {
+    overflow-x: hidden;
+}
+
+.dataTables_processing{
+    position: fixed;
+    z-index: 999;
+}
+
+.toolbar {
+    float: right;
+}
+
+#csv_button {
+    width: 100%;
+}
+
+div.loginTitle {
+    background: #F70 url("banner.png") no-repeat scroll;
+}
+
+div.navboxes {
+    padding-left: 5%;
+}
+
+div.boxBody {
+    padding-left: 6%;
+}
+
+.icon-status::before {
+    content: "\2193";
+}
+
+#logo {
+    width: 150px;
+    height: 42px;
+    background-image: url(images/snapview.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    float: left;
+}
+
+#floating-clear {
+    clear: both;
+}
+
+#gallery-img {
+    float: left;
+    width: 50%;
+    margin-left: 15%;
+    margin-right: 3%;
+    border: 0.3em solid #73AD21;
+}
+.gallery-img {
+    width: 100%;
+    display: block;
+}
+
+#gallery-form {
+    float: left;
+    width: 20%;
+}
+
+.btn {
+    margin-right: 0.8%;
+    width: 32%;
+}
+
+#wave-rate {
+    float: left;
+    width: 65%;
+}
+
+
+#wave-help {
+    float: left;
+    width: 35%;
+}
+
+a.fullbtn {
+    margin-right: 0.0%;
+    width: 100%;
+}
+a.fullbtn {
+    margin-right: 0.0%;
+    width: 100%;
+}
