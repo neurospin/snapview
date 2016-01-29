@@ -11,10 +11,16 @@ from ctypes import *
 from openctm import *
 import polyhedra, blob
 import numpy
-from clindmri.extensions.freesurfer.reader import TriSurface
 
 
 def octohedron(outdir):
+    """ Create a octohedron CTM mesh file.
+
+    Parameters
+    ----------
+    outdir: str
+        directory where a 'octohedron.ctm' file will be saved.
+    """
     verts, faces = polyhedra.octohedron() 
     pVerts = blob.make_blob(verts, c_float)
     pFaces = blob.make_blob(faces, c_uint)
@@ -22,19 +28,30 @@ def octohedron(outdir):
     ctm = ctmNewContext(CTM_EXPORT)
     ctmDefineMesh(ctm, pVerts, len(verts), pFaces, len(faces), pNormals)
     vertcolors = []
-    colors = [(1,1,1,1),   # white
-              (1,1,0,1),   # yellow
-              (1,0.5,0,1), # orange
-              (0,1,0,1),   # red
-              (1,0,0,1),   # red
-              (0,0,1,1)]   # blue
+    colors = [(1,1,1,1),
+              (1,1,0,1),
+              (1,0.5,0,1),
+              (0,1,0,1),
+              (1,0,0,1),
+              (0,0,1,1)]
     vertcolors = [c for c in colors]
     pColors = blob.make_blob(vertcolors, c_float)
     ctmAddAttribMap(ctm, pColors, "Color")
     ctmSave(ctm, os.path.join(outdir, "octohedron.ctm"))
     ctmFreeContext(ctm)
 
+
 def fsmesh2ctm(fsmesh_file, outdir):
+    """ Convert a freesurfer mesh to a CTM mesh.
+
+    Parameters
+    ----------
+    outdir: str
+        directory where a '*.ctm' file will be saved. The output file base
+        name will be the same as the input mesh file.
+    """
+    from clindmri.extensions.freesurfer.reader import TriSurface
+
     dirname = os.path.dirname(fsmesh_file)
     basename = os.path.basename(fsmesh_file)
     hemi, surf = basename.split(".")

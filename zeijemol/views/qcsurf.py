@@ -83,6 +83,7 @@ class QcSurf(View):
         self._cw.add_js("qcsurf/js/CTMLoader.js")
 
         # Add viewer containers
+        self.w(u'<div id="text"></div>')
         self.w(u'<div id="viewer">')
         self.w(u'<div id="toolbar">')
         self.w(u'<span id="hemisphere" class="select"> '
@@ -137,7 +138,6 @@ def get_ctm_rawdata(self):
         statlines = open_file.readlines()
 
     # Format the ajax data
-    print len(encoded_mesh)
     data = {"encoded_mesh": encoded_mesh, "statlines": statlines}
 
     return data

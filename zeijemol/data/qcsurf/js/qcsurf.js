@@ -98,10 +98,14 @@ function loadMesh() {
 	loader.load( meshpath, 
 		function( geometry ) {
 			mesh = new THREE.Mesh(geometry, materials[current_material]);
-            mesh.flipSided = true;
+            var box = new THREE.Box3().setFromObject(mesh);
+            box.center(mesh.position); // this re-sets the mesh position
+            mesh.position.multiplyScalar(- 1);
+            var pivot = new THREE.Group();
 			while(scene.children.length>0)
 				scene.remove(scene.children[0]);
-			scene.add( mesh );
+            scene.add(pivot);
+			scene.add(mesh);
 			$("#overlay").html(
                 "<b>"+meshoverlay+"</b>"
 			);
@@ -160,24 +164,19 @@ function drawFingerprint(param) {
 	// draw radar circles units
 	var txt=makeSVG('text',{x:50+12.5,y:57,"font-size":8,fill:"#afafaf"});
 	txt.innerHTML="-&sigma;&nbsp;&nbsp;&nbsp;&mu;&nbsp;&nbsp;&nbsp;+&sigma;";
+    $(svg).append(txt);
 
-	//rect = txt.getBBox();//console.log(rect);
+	//rect = txt.getBBox(); console.log(rect);
     var rect = {};
     try {
-     rect = this.node.getBBox();
-     // For Chrome
-     if (!ie && !rect.x && !rect.y && !rect.height && !rect.width) {
-         rect.x = this.attr('x');
-         rect.y = this.attr('y');
-     }
+        rect = txt.getBBox();
     } catch(e) {
-     // Firefox 3.0.x plays badly here
+        // Firefox 3.0.x plays badly here
     } finally {
-     rect = rect || {};
+       rect = rect || {};
     }
 
 	$(svg).append(makeSVG('rect',{x:50+12.5,y:51,width:40,height:8,fill:"rgba(0,0,0,0.5)"}));
-	$(svg).append(txt);
 	
 	// draw fingerprint path
 	d=[];
@@ -216,11 +215,11 @@ function drawFingerprint(param) {
 		if(r<0){ r=0;f="#ff0000"};
 		x=55+50*r*Math.cos(2*Math.PI*i/n);
 		y=55+50*r*Math.sin(2*Math.PI*i/n);
-		var reg=makeSVG('circle',{class:'region ',title:val,fill:f,r:2,cx:x,cy:y});
+		var reg=makeSVG('circle',{class:'region ',title:val, fill:f, r:2, cx:x, cy:y});
 		$(svg).append(reg);
 		i++;
 	}
-	$(".region").css({"pointer-events":"auto"});
+	$(".region").css({"pointer-events": "auto"});
 	$(".region").hover(function(){
 		var x=$(this).attr('cx');
 		var y=$(this).attr('cy');
@@ -230,6 +229,7 @@ function drawFingerprint(param) {
 		p.x=x;
 		p.y=y;
 		var pp=p.matrixTransform(m);
+        document.getElementById("text").style.display = "block";
 		$("#text").css({left:pp.x,top:pp.y});
 		$("#text").text($(this).attr('title'));
 	});

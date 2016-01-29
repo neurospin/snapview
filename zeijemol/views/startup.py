@@ -54,12 +54,12 @@ class SnapIndexView(IndexView):
                 data = {}
                 nb_elements = sum(scores)
                 if nb_elements == 0:
-                    data["0 rate"] = 0
-                    continue
-                counter = collections.Counter(scores)
-                for nb_scores, frequency in counter.items():
-                    title = "{0} rate(s)".format(nb_scores)
-                    data[title] = frequency / nb_elements * 100
+                    data["0"] = 100
+                else:
+                    counter = collections.Counter(scores)
+                    for nb_scores, frequency in counter.items():
+                        title = "{0}".format(nb_scores)
+                        data[title] = frequency / nb_elements * 100
 
                 # Call PieChart for html generation of the summary
                 print container_id, nb_columns, container_id % nb_columns
@@ -67,7 +67,7 @@ class SnapIndexView(IndexView):
                     self.w(u'<tr>')
                 self.w(u'<td class="col-md-3">')
                 self.wview("pie-highcharts", None, "null", data=data,
-                           title="Summary: {0}".format(wave_name),
+                           title="Number of rates: {0}".format(wave_name),
                            container_id=container_id)
                 self.w(u'</td>')
                 if container_id % nb_columns == nb_columns - 1:

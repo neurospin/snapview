@@ -11,6 +11,13 @@ from ctypes import *
 
 def make_blob(verts, T):
     """ Convert a list of tuples of numbers into a ctypes pointer-to-array.
+
+    Parameters
+    ----------
+    verts: list (N, 3)
+        the position of each vetex in 3d.
+    T: ctype
+        type for conversion.
     """
     size = len(verts) * len(verts[0])
     Blob = T * size

@@ -81,7 +81,6 @@ List of elements
 * elem 2.
 """
 
-
 # Import new waves
 importer.insert(WAVE1_NAME, WAVE1_CATEGORY, WAVE1_EXPRESSION, CODE_EXPRESSION,
                 WAVE1_DESC)
