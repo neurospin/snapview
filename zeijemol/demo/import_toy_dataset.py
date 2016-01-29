@@ -15,7 +15,7 @@ import getpass
 
 # Piws import
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
-from snapview.importer import SnapsImporter
+from zeijemol.importer import SnapsImporter
 
 
 # Ask for instance & login information
@@ -66,12 +66,25 @@ List of elements
 * elem1.
 * elem 2.
 """
-CODE_EXPRESSION3 = "\d{12}"
 WAVE3_NAME = "wave_3"
-WAVE3_CATEGORY = "freesurfer"
-WAVE3_EXPRESSION = "./data/fs/*/surf/rh.white.ctm"
-WAVE3_EXTRA = ["atefacts"]
+WAVE3_CATEGORY = "QAP"
+WAVE3_EXPRESSION = "./data/*/*.pdf"
+WAVE3_EXTRA = ["atefacts", "noise", "mouvment"]
 WAVE3_DESC = """
+Some doc about this wave
+------------------------
+
+List of elements
+
+* elem1.
+* elem 2.
+"""
+CODE_EXPRESSION4 = "\d{12}"
+WAVE4_NAME = "wave_4"
+WAVE4_CATEGORY = "freesurfer"
+WAVE4_EXPRESSION = "./data/fs/*/surf/rh.white.ctm"
+WAVE4_EXTRA = ["atefacts"]
+WAVE4_DESC = """
 Some doc about this wave
 ------------------------
 
@@ -86,6 +99,8 @@ importer.insert(WAVE1_NAME, WAVE1_CATEGORY, WAVE1_EXPRESSION, CODE_EXPRESSION,
                 WAVE1_DESC)
 importer.insert(WAVE2_NAME, WAVE2_CATEGORY, WAVE2_EXPRESSION, CODE_EXPRESSION,
                 WAVE2_DESC, WAVE2_EXTRA)
-importer.insert(WAVE3_NAME, WAVE3_CATEGORY, WAVE3_EXPRESSION, CODE_EXPRESSION3,
+importer.insert(WAVE3_NAME, WAVE3_CATEGORY, WAVE3_EXPRESSION, CODE_EXPRESSION,
                 WAVE3_DESC, WAVE3_EXTRA)
+importer.insert(WAVE4_NAME, WAVE4_CATEGORY, WAVE4_EXPRESSION, CODE_EXPRESSION4,
+                WAVE4_DESC, WAVE4_EXTRA)
 

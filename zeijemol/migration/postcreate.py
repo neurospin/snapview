@@ -22,6 +22,6 @@ You could setup site properties or a workflow here for example.
 """
 
 # Example of site property change
-set_property("ui.site-title", "SNAPView")
+set_property("ui.site-title", "Zeijemol")
 set_property("navigation.page-size", "40")
 

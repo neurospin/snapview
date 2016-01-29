@@ -74,8 +74,8 @@ class Snap(EntityType):
     dtype = String(
         required=True,
         indexed=True,
-        vocabulary=("CTM", "PNG", "JPEG", "JPG"),
-        description=u"the file type: 'CTM', 'PNG', 'JPG' or 'JPEG' are supported.")
+        vocabulary=("CTM", "PNG", "JPEG", "JPG", "PDF"),
+        description=u"the file type: 'PDF', 'CTM', 'PNG', 'JPG' or 'JPEG' are supported.")
     sha1hex = String(
         maxsize=40,
         description=u"the SHA1 sum of the file.")

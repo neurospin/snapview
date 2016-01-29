@@ -22,7 +22,7 @@ from cubicweb import Binary
 from cubicweb.server.utils import crypt_password
 
 # SnapView import
-from snapview.docgen.rst2html import rst2html
+from zeijemol.docgen.rst2html import rst2html
 
 
 class SnapsImporter(object):
