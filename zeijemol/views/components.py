@@ -57,8 +57,8 @@ class CWWaveBox(component.CtxComponent):
                     "Any S Where W is Wave, W name '{0}', W snaps S".format(
                         wave_name))
                 display_wave_button = False
-                for index in range(wave_rset.rowcount):
-                    snap_entity = wave_rset.get_entity(index, 0)
+                for index_wave in range(wave_rset.rowcount):
+                    snap_entity = wave_rset.get_entity(index_wave, 0)
                     scores = [
                         e for e in snap_entity.scores
                         if e.scored_by[0].login == self._cw.session.login]
@@ -66,8 +66,8 @@ class CWWaveBox(component.CtxComponent):
                         display_wave_button = True
                         break
                 wave_rset = [
-                    item for index, item in enumerate(wave_rset)
-                    if len(wave_rset.get_entity(index, 0).scores) == 0]
+                    item for index_wave, item in enumerate(wave_rset)
+                    if len(wave_rset.get_entity(index_wave, 0).scores) == 0]
                 if display_wave_button:
                     # Create two buttons, one for the wave selection and one
                     # for the wave documentation
