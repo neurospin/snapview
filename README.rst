@@ -29,7 +29,7 @@ Then a 'toy_instance' instance has to be created based on the proposed cube::
 
 It is now possible to add new data in the database for ratings::
 
-    from snapview.importer import SnapsImporter
+    from zeijemol.importer import SnapsImporter
 
     importer = SnapsImporter("toy_instance", "my_login", "my_password")
     importer.insert("wave 1", "FreeSurfer", "./data/fs/*/surf/rh.white.ctm",
@@ -43,7 +43,7 @@ Utils
 A utility function is proposed to convert FreeSurfer mesh. It requires the
 'openctm' package::
 
-    from snapview.importer import fsmesh2ctm
+    from zeijemol.importer import fsmesh2ctm
 
     fsmesh2ctm("./data/fs/s1/surf/rh.white", "./data/fs/s1/surf/")
     

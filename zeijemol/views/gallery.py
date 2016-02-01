@@ -79,14 +79,17 @@ class Gallery(View):
                 header=[snap_entity.code], populationpath=href)
             self.w(u'</div>')
         else:
-            print snap_entity.filepath
             with open(snap_entity.filepath, "rb") as image_file:
                 encoded_string = base64.b64encode(image_file.read())
             self.w(u'<div id="gallery-img">')
-            print snap_entity.dtype.lower()
-            self.w(u'<img class="gallery-img" alt="Embedded Image" '
-                   'src="data:image/{0};base64, {1}" />'.format(
-                       snap_entity.dtype.lower(), encoded_string))
+            if snap_entity.dtype.lower() == "pdf":
+                self.w(u'<embed class="gallery-pdf" alt="Embedded PDF" '
+                       'src="data:application/pdf;base64, {0}" />'.format(
+                            encoded_string))
+            else:
+                self.w(u'<img class="gallery-img" alt="Embedded Image" '
+                       'src="data:image/{0};base64, {1}" />'.format(
+                           snap_entity.dtype.lower(), encoded_string))
             self.w(u'</div>')
 
         # Display/Send a form

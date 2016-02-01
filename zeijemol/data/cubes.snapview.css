@@ -63,6 +63,12 @@ div.boxBody {
 }
 .gallery-img {
     width: 100%;
+    height: 80rem;
+    display: block;
+}
+.gallery-pdf {
+    width: 100%;
+    height: 80rem;
     display: block;
 }
 
