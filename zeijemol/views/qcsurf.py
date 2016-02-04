@@ -34,7 +34,7 @@ class QcSurf(View):
         Parameters
         ----------
         fsdir: str
-            the freesurfer subject base directory: /fsdir/surf/hemi.white - 
+            the freesurfer subject base directory: /fsdir/surf/hemi.white -
             /fsdir/stats/hemi.aparc.stats
         header: list of str
             something to display in the viewer overlay.
@@ -52,17 +52,19 @@ class QcSurf(View):
                     "stats": os.path.join(
                         fsdir, "stats", "{0}.aparc.stats".format(hemi))
                 }
-        
-        # Construct the data accessor url   
+
+        # Construct the data accessor url
         ajaxcallback = self._cw.build_url("ajax", fname="get_ctm_rawdata")
 
         # Add tool tip
         header += ["Press 'c' to change the texture."]
-
+        logo_link = self._cw.data_url("images/naat_logo.png")
+        credit_link = "http://neuroanatomy.github.io/"
         # Create javascript global variables
         jsctmworker = self._cw.data_url("qcsurf/js/CTMWorker.js")
         self.w(u'<script>')
         self.w(u'var meshoverlay="{0}";'.format("<br/>".join(header)))
+        self.w(u'var credit_link="{0}";'.format(credit_link))
         self.w(u'var jsctmworker="{0}";'.format(jsctmworker))
         self.w(u'var populationpath="{0}";'.format(populationpath))
         self.w(u'var ajaxcallback="{0}";'.format(ajaxcallback))
@@ -86,12 +88,17 @@ class QcSurf(View):
         self.w(u'<div id="text"></div>')
         self.w(u'<div id="viewer">')
         self.w(u'<div id="toolbar">')
+
         self.w(u'<span id="hemisphere" class="select"> '
                '<span id="lh" class="button">Left</span> '
                '<span id="rh" class="button selected">Right</span></span>')
         self.w(u'<span id="surface" class="select"> '
                '<span id="pial" class="button">Pial</span> '
                '<span id="white" class="button selected">White</span></span>')
+        self.w(u'<div align="right">')
+        self.w(u'<img id="naat" src="{}">'.format(logo_link))
+        self.w(u'</div>')
+
         self.w(u'</div>')
         self.w(u'<div id="overlay"></div>')
         self.w(u'<div id="container"></div>')

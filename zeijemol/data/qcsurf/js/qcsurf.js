@@ -44,13 +44,19 @@ function population_statistics () {
 	    console.log(pop_stats);
     });
 }
-function init_gui() {	
+function init_gui() {
 	// Connect button functions
 	$("#lh").click(selectHemisphere);
 	$("#rh").click(selectHemisphere);
 	$("#pial").click(selectSurface);
-	$("#white").click(selectSurface);		
+	$("#white").click(selectSurface);
+     $("#naat").click(goToCredits);
 }
+
+function goToCredits() {
+    window.location=credit_link;
+}
+
 function selectHemisphere() {
     hemi = this.id;
 	$("#hemisphere .button").removeClass("selected");
@@ -95,7 +101,7 @@ function init_3d() {
 function loadMesh() {
 	var loader = new THREE.CTMLoader();
 	$("#overlay").html("Loading...");
-	loader.load( meshpath, 
+	loader.load( meshpath,
 		function( geometry ) {
 			mesh = new THREE.Mesh(geometry, materials[current_material]);
             var box = new THREE.Box3().setFromObject(mesh);
@@ -149,11 +155,11 @@ function makeSVG(tag, attrs) {
     return el;
 }
 function drawFingerprint(param) {
-	
+
 	var svg,r,i,d,arr,n,max,val,x,y,path,f;
-	
+
 	arr=Object.keys(param.data);
-	
+
 	svg=makeSVG('svg',{viewBox:'0,0,110,110',width:200,height:200});
 	$("#overlay").append(svg);
 
@@ -177,7 +183,7 @@ function drawFingerprint(param) {
     }
 
 	$(svg).append(makeSVG('rect',{x:50+12.5,y:51,width:40,height:8,fill:"rgba(0,0,0,0.5)"}));
-	
+
 	// draw fingerprint path
 	d=[];
 	i=0;
@@ -240,7 +246,7 @@ function onWindowResize( event ) {
 	renderer.setSize( W, H );
 	camera.aspect = W/H;
 	camera.updateProjectionMatrix();
-}	
+}
 function animate() {
 	requestAnimationFrame( animate );
 	render();
