@@ -17,11 +17,10 @@ var materials = [
     new THREE.MeshBasicMaterial({vertexColors: THREE.FaceColors}),
 ];
 var current_material = 0;
-var pop_stats;
 var encoded_mesh;
 var lines;
 var meshpath;
-
+var pop_stats;
 
 function get_new_data () {
     var ctmfile = fs_struct[hemi][surf]["mesh"];
@@ -37,13 +36,21 @@ function get_new_data () {
         loadMesh();
     });
 }
+//function population_statistics () {
+    // Load subject population stats
+//    $.getJSON(populationpath, function(data) {
+//	    pop_stats=data;
+//	    console.log(pop_stats);
+//    });
+
+//}
+
 function population_statistics () {
     // Load subject population stats
-    $.getJSON(populationpath, function(data) {
-	    pop_stats=data;
-	    console.log(pop_stats);
-    });
+    pop_stats=input_pop_stats;
 }
+
+
 function init_gui() {
 	// Connect button functions
 	$("#lh").click(selectHemisphere);

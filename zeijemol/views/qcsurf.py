@@ -41,6 +41,10 @@ class QcSurf(View):
         populationpath: str
             a path to the population statistics.
         """
+        # load population statistics
+        with open(populationpath, 'r') as _file:
+            stats_pop = json.load(_file)
+
         # Build the path to the freesurfer images
         fs_struct = {}
         for hemi in ["rh", "lh"]:
@@ -66,7 +70,7 @@ class QcSurf(View):
         self.w(u'var meshoverlay="{0}";'.format("<br/>".join(header)))
         self.w(u'var credit_link="{0}";'.format(credit_link))
         self.w(u'var jsctmworker="{0}";'.format(jsctmworker))
-        self.w(u'var populationpath="{0}";'.format(populationpath))
+        self.w(u'var input_pop_stats={0};'.format(json.dumps(stats_pop)))
         self.w(u'var ajaxcallback="{0}";'.format(ajaxcallback))
         self.w(u'var fs_struct={0};'.format(json.dumps(fs_struct)))
         self.w(u'var hemi="rh";')

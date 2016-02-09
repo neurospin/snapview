@@ -71,12 +71,15 @@ class Gallery(View):
         # Display the image to rate
         if snap_entity.dtype == "CTM":
             self.w(u'<div id="gallery-img">')
-            href = self._cw.data_url("qcsurf/population_mean_sd.json")
+            json_stats = self._cw.vreg.config["json_population_stats"]
+            if not os.path.isfile(json_stats):
+                json_stats = os.path.join(self._cw.vreg.config.CUBES_DIR,
+                                          "zeijemol/data/qcsurf/"
+                                          "population_mean_sd.json")
             fsdir = os.path.join(os.path.dirname(snap_entity.filepath),
-                                    os.pardir)
-            self.wview(
-                "mesh-qcsurf", None, "null", fsdir=fsdir,
-                header=[snap_entity.code], populationpath=href)
+                                 os.pardir)
+            self.wview("mesh-qcsurf", None, "null", fsdir=fsdir,
+                       header=[snap_entity.code], populationpath=json_stats)
             self.w(u'</div>')
         else:
             with open(snap_entity.filepath, "rb") as image_file:
@@ -85,7 +88,7 @@ class Gallery(View):
             if snap_entity.dtype.lower() == "pdf":
                 self.w(u'<embed class="gallery-pdf" alt="Embedded PDF" '
                        'src="data:application/pdf;base64, {0}" />'.format(
-                            encoded_string))
+                           encoded_string))
             else:
                 self.w(u'<img class="gallery-img" alt="Embedded Image" '
                        'src="data:image/{0};base64, {1}" />'.format(
