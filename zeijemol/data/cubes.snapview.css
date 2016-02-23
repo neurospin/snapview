@@ -59,7 +59,6 @@ div.boxBody {
     width: 70%;
     margin-left: 3%;
     margin-right: 2%;
-    border: 0.3em solid #73AD21;
 }
 .gallery-img {
     width: 100%;
@@ -79,7 +78,7 @@ div.boxBody {
 
 .btn {
     margin-right: 0.8%;
-    width: 32%;
+    width: 20%;
 }
 
 #wave-rate {
@@ -100,4 +99,15 @@ a.fullbtn {
 a.fullbtn {
     margin-right: 0.0%;
     width: 100%;
+}
+
+table#mainLayout td#navColumnLeft, table#mainLayout td#navColumnRight {
+    width: 250px;
+}
+.row {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display:         flex;
+    margin-bottom: 15px;
 }

@@ -68,20 +68,24 @@ class Gallery(View):
         self.w(u'</div>')
         self.w(u"</div>")
 
+        # Open the viewer div
+        self.w(u'<div id="gallery-img">')
         # Display the image to rate
         if snap_entity.dtype == "CTM":
-            self.w(u'<div id="gallery-img">')
             href = self._cw.data_url("qcsurf/population_mean_sd.json")
             fsdir = os.path.join(os.path.dirname(snap_entity.filepath),
                                     os.pardir)
             self.wview(
                 "mesh-qcsurf", None, "null", fsdir=fsdir,
                 header=[snap_entity.code], populationpath=href)
-            self.w(u'</div>')
+        elif snap_entity.dtype in ["NII", "NII_GZ"]:
+            imagefiles = [snap_entity.filepath]
+            self.wview(
+                "brainbrowser-image-viewer", None, "null",
+                imagefiles=imagefiles)
         else:
             with open(snap_entity.filepath, "rb") as image_file:
                 encoded_string = base64.b64encode(image_file.read())
-            self.w(u'<div id="gallery-img">')
             if snap_entity.dtype.lower() == "pdf":
                 self.w(u'<embed class="gallery-pdf" alt="Embedded PDF" '
                        'src="data:application/pdf;base64, {0}" />'.format(
@@ -90,13 +94,15 @@ class Gallery(View):
                 self.w(u'<img class="gallery-img" alt="Embedded Image" '
                        'src="data:image/{0};base64, {1}" />'.format(
                            snap_entity.dtype.lower(), encoded_string))
-            self.w(u'</div>')
+        # Close the viewer div
+        self.w(u'</div>')
 
         # Display/Send a form
         href = self._cw.build_url("rate-controller", eid=snap_entity.eid,
                                   filepath=snap_entity.filepath)
         self.w(u'<div id="gallery-form">')
         self.w(u'<form action="{0}" method="post">'.format(href))
+        self.w(u'<input type="hidden" name="wave_name" value="{0}">'.format(wave_name))
         self.w(u'<input class="btn btn-success" type="submit" '
                'name="rate" value="Good"/>')
         self.w(u'<input class="btn btn-danger" type="submit" '
@@ -104,6 +110,7 @@ class Gallery(View):
         self.w(u'<input class="btn btn-info" type="submit" '
                'name="rate" value="Rate later"/>')
         if len(extra_answers) > 0:
+            self.w(u'<br><br>')
             self.w(u'<u>Optional observations:</u>')
         for extra in extra_answers:
             self.w(u'<div class="checkbox">')
