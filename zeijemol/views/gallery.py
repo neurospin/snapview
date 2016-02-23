@@ -102,7 +102,8 @@ class Gallery(View):
                                   filepath=snap_entity.filepath)
         self.w(u'<div id="gallery-form">')
         self.w(u'<form action="{0}" method="post">'.format(href))
-        self.w(u'<input type="hidden" name="wave_name" value="{0}">'.format(wave_name))
+        self.w(u'<input type="hidden" name="wave_name" '
+               u'value="{0}">'.format(wave_name))
         self.w(u'<input class="btn btn-success" type="submit" '
                'name="rate" value="Good"/>')
         self.w(u'<input class="btn btn-danger" type="submit" '
