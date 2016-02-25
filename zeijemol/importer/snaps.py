@@ -112,7 +112,7 @@ class SnapsImporter(object):
         print("Inserting '{0}' snaps...".format(len(snaps)))
         for cnt, path in enumerate(snaps):
             # > display progress
-            ratio = (cnt + 1) / len(snaps)
+            ratio = float(cnt + 1) / len(snaps)
             self._progress_bar(ratio, title="SNAPS", bar_length=40)
             # > get code identifier
             values = set(re.findall(code_expression, path))
@@ -123,7 +123,17 @@ class SnapsImporter(object):
                     "Can't extract a single code with regex '{0}' on path "
                     "'{1}'.".format(code_expression, path))
             # > create entity
-            ext = path.split(".")[-1].upper()
+            filename = os.path.basename(path)
+            split_filename = filename.split(".")
+            len_split_filename = len(split_filename)
+            if len_split_filename == 2:
+                ext = os.path.basename(path).split(".")[-1]
+            elif len_split_filename == 3:
+                ext = '_'.join(split_filename[1:])
+            else:
+                raise Exception('Expected one or to file extensions, '
+                                'found {}'.format(filename))
+            ext = ext.upper()
             with open(path, "rb") as open_file:
                 sha1hex = self._md5_sum(open_file.read(), algo="sha1")
             snap_struct = {

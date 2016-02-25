@@ -119,7 +119,7 @@ class SnapIndexView(IndexView):
                     if len(scores) > 1:
                         raise Exception(
                             "We expect one score per user for one snap.")
-                progress = int(nb_rates / nb_of_snaps * 100)
+                progress = float(nb_rates / nb_of_snaps * 100)
 
                 self.w(u'<tr>')
                 self.w(u'<td>')
@@ -130,9 +130,9 @@ class SnapIndexView(IndexView):
                 self.w(u'<td>')
                 self.w(u'<div class="progress">')
                 self.w(u'<div class="progress-bar" role="progressbar" '
-                       'aria-valuenow="{0}" aria-valuemin="0" aria-valuemax='
-                       '"100" style="width:{0}%">'.format(progress))
-                self.w(u'{0}%'.format(progress))
+                       'aria-valuenow="{0:.1f}" aria-valuemin="0" aria-valuemax='
+                       '"100" style="width:{0:.1f}%">'.format(progress))
+                self.w(u'{0:.1f}%'.format(progress))
                 self.w(u'</div>')
                 self.w(u"</div>")
                 self.w(u'</td>')
