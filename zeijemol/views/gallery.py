@@ -59,12 +59,12 @@ class Gallery(View):
         snap_entity = rset.get_entity(rset_indices[rand_index], 0)
 
         # Dispaly status
-        progress = int((1 - nb_snaps_to_rate / nb_of_snaps) * 100)
+        progress = float((1 - nb_snaps_to_rate / nb_of_snaps) * 100)
         self.w(u'<div class="progress">')
         self.w(u'<div class="progress-bar" role="progressbar" '
-               'aria-valuenow="{0}" aria-valuemin="0" aria-valuemax='
-               '"100" style="width:{0}%">'.format(progress))
-        self.w(u'{0}%'.format(progress))
+               'aria-valuenow="{0:.1f}" aria-valuemin="0" aria-valuemax='
+               '"100" style="width:{0:.1f}%">'.format(progress))
+        self.w(u'{0:.1f}%'.format(progress))
         self.w(u'</div>')
         self.w(u"</div>")
 
