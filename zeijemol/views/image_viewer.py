@@ -717,7 +717,7 @@ class ImageViewer(View):
         # Define item to change the panel size
         html += "<span class='control-heading'>Panel size:</span>"
         html += "<select id='panel-size'>"
-        html += "<option value='128'>128</option>"
+        # html += "<option value='128'>128</option>"
         html += "<option value='256'>256</option>"
         html += "<option value='512' selected='selected'>512</option>"
         html += "</select>"
