@@ -111,3 +111,6 @@ table#mainLayout td#navColumnLeft, table#mainLayout td#navColumnRight {
     display:         flex;
     margin-bottom: 15px;
 }
+.progress-bar {
+    color: #000000;
+}
