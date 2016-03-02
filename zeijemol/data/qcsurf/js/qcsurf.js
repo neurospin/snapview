@@ -36,28 +36,19 @@ function get_new_data () {
         loadMesh();
     });
 }
-//function population_statistics () {
-    // Load subject population stats
-//    $.getJSON(populationpath, function(data) {
-//	    pop_stats=data;
-//	    console.log(pop_stats);
-//    });
-
-//}
 
 function population_statistics () {
     // Load subject population stats
     pop_stats=input_pop_stats;
 }
 
-
 function init_gui() {
 	// Connect button functions
-	$("#lh").click(selectHemisphere);
-	$("#rh").click(selectHemisphere);
-	$("#pial").click(selectSurface);
-	$("#white").click(selectSurface);
-     $("#naat").click(goToCredits);
+    $("#lh").click(selectHemisphere);
+    $("#rh").click(selectHemisphere);
+    $("#pial").click(selectSurface);
+    $("#white").click(selectSurface);
+    $("#naat").click(goToCredits);
 }
 
 function goToCredits() {
