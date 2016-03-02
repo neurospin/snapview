@@ -74,7 +74,7 @@ class Gallery(View):
             json_stats = self._cw.vreg.config["json_population_stats"]
             if not os.path.isfile(json_stats):
                 json_stats = os.path.join(self._cw.vreg.config.CUBES_DIR,
-                                          "zeijemol/data/qcsurf/"
+                                          "zeijemol", "data", "qcsurf"
                                           "population_mean_sd.json")
             fsdir = os.path.join(os.path.dirname(snap_entity.filepath),
                                  os.pardir)

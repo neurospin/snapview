@@ -20,7 +20,6 @@ var current_material = 0;
 var encoded_mesh;
 var lines;
 var meshpath;
-var pop_stats;
 
 function get_new_data () {
     var ctmfile = fs_struct[hemi][surf]["mesh"];
@@ -38,8 +37,7 @@ function get_new_data () {
 }
 
 function population_statistics () {
-    // Load subject population stats
-    pop_stats=input_pop_stats;
+    // do nothing. json population statistics already loaded
 }
 
 function init_gui() {

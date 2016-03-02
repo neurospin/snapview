@@ -70,7 +70,7 @@ class QcSurf(View):
         self.w(u'var meshoverlay="{0}";'.format("<br/>".join(header)))
         self.w(u'var credit_link="{0}";'.format(credit_link))
         self.w(u'var jsctmworker="{0}";'.format(jsctmworker))
-        self.w(u'var input_pop_stats={0};'.format(json.dumps(stats_pop)))
+        self.w(u'var pop_stats={0};'.format(json.dumps(stats_pop)))
         self.w(u'var ajaxcallback="{0}";'.format(ajaxcallback))
         self.w(u'var fs_struct={0};'.format(json.dumps(fs_struct)))
         self.w(u'var hemi="rh";')
