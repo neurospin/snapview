@@ -60,7 +60,7 @@ class SnapsImporter(object):
     #   Public Methods
     ###########################################################################
 
-    def insert(self, wave_name, wave_category, expression, code_expression,
+    def insert(self, wave_name, wave_category, wave_dict,
                wave_description, extra_answers=None):
         """ Insert a new wave of snaps.
 
@@ -70,20 +70,15 @@ class SnapsImporter(object):
             the name of the current wave.
         wave_category: str
             a category used to filter waves.
-        expression: str
-            an expression that will be globed to get the snap files.
-        code_expression: str
-            a regular expression used to select a file code from a file path.
+        wave_dict: dict
+            a dictionary structure of the form:
+            {subject_id: {snaps: {filepaths: [filepath list],
+                                  dtype: description of the tool to use}}
         wave_description: str
             the description of the wave formated in RST.
         extra_answers: list of str (optional, default=None)
             a list of closed possible extra answers.
         """
-        # Get the snap files
-        snaps = glob.glob(expression)
-        if len(snaps) == 0:
-            raise ValueError(
-                "No snap found with regex '{0}'.".format(expression))
 
         # Format the 'extra_answers' parameter if necessary
         extra_answers = extra_answers or []
@@ -109,45 +104,72 @@ class SnapsImporter(object):
         wave_eid = wave_entity.eid
 
         # Insert the snaps if necassary
-        print("Inserting '{0}' snaps...".format(len(snaps)))
-        for cnt, path in enumerate(snaps):
-            # > display progress
-            ratio = (cnt + 1) / len(snaps)
+        cnt = 0
+        tot = len(wave_dict.keys())
+        print("Inserting '{0}' subjectMeasures...".format(
+            len(wave_dict.keys())))
+        for subject, snaps in wave_dict.items():
+            cnt += 1
+                # > display progress
+            ratio = float(cnt + 1) / tot
             self._progress_bar(ratio, title="SNAPS", bar_length=40)
-            # > get code identifier
-            values = set(re.findall(code_expression, path))
-            if len(values) == 1:
-                code = values.pop()
-            else:
-                raise ValueError(
-                    "Can't extract a single code with regex '{0}' on path "
-                    "'{1}'.".format(code_expression, path))
-            # > create entity
-            ext = path.split(".")[-1].upper()
-            with open(path, "rb") as open_file:
-                sha1hex = self._md5_sum(open_file.read(), algo="sha1")
-            snap_struct = {
-                "identifier": self._md5_sum(path),
-                "name": os.path.basename(path).split(".")[0].replace("_", " "),
-                "absolute": True,
-                "filepath": os.path.abspath(path),
-                "dtype": ext,
-                "sha1hex": sha1hex,
-                "code": code
-            }
-            snap_entity, snap_created = self._get_or_create_unique_entity(
-                rql=("Any X Where X is Snap, X identifier "
-                     "'{0}'".format(snap_struct["identifier"])),
-                check_unicity=True,
-                entity_name="Snap",
-                **self._u(snap_struct))
-            snap_eid = snap_entity.eid
+
+            subjectMeasure_struct = {
+                "identifier": self._md5_sum("{}{}".format(
+                    wave_name, subject)),
+                "name": "{}_{}".format(wave_name.replace("_", " "),
+                                       subject)
+                }
+            subjectMeasure_entity, subjectMeasure_created = \
+                self._get_or_create_unique_entity(
+                    rql=("Any X Where X is SubjectMeasure, X identifier "
+                         "'{0}'".format(
+                             subjectMeasure_struct["identifier"])),
+                    check_unicity=True,
+                    entity_name="SubjectMeasure",
+                    **self._u(subjectMeasure_struct))
+            subjectMeasure_eid = subjectMeasure_entity.eid
+
+            for snap_key, snap_val in snaps.items():
+                # > create entity
+#                with open(path, "rb") as open_file:
+#                    sha1hex = self._md5_sum(open_file.read(), algo="sha1")
+
+                snap_struct = {
+                    "identifier": self._md5_sum("{}{}{}".format(wave_name,
+                                                                subject,
+                                                                snap_key)),
+                    "name": snap_key,
+                    "absolute": True,
+                    "filepaths": Binary(json.dumps(snap_val["filepaths"])),
+                    "dtype": snap_val["dtype"]
+#                    "sha1hex": sha1hex
+                }
+                snap_entity, snap_created = self._get_or_create_unique_entity(
+                    rql=("Any X Where X is Snap, X identifier "
+                         "'{0}'".format(snap_struct["identifier"])),
+                    check_unicity=True,
+                    entity_name="Snap",
+                    **self._u(snap_struct))
+                snap_eid = snap_entity.eid
+
+                if snap_created:
+                    self._set_unique_relation(
+                        snap_eid, "subject_measure", subjectMeasure_eid,
+                        check_unicity=False)
+                    self._set_unique_relation(
+                        subjectMeasure_eid, "snaps", snap_eid,
+                        check_unicity=False)
+
             # add relations
-            if snap_created:
+            if subjectMeasure_created:
                 self._set_unique_relation(
-                    wave_eid, "snaps", snap_eid, check_unicity=False)
+                    subjectMeasure_eid, "wave", wave_eid,
+                    check_unicity=False)
                 self._set_unique_relation(
-                    snap_eid, "wave", wave_eid, check_unicity=False)
+                    wave_eid, "subject_measures", subjectMeasure_eid,
+                    check_unicity=False)
+
 
         self.session.commit()
 

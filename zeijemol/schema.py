@@ -19,6 +19,7 @@
 from yams.buildobjs import EntityType
 from yams.buildobjs import String
 from yams.buildobjs import Boolean
+from yams.buildobjs import Bytes
 from yams.buildobjs import SubjectRelation
 from cubicweb.schema import ERQLExpression
 
@@ -68,27 +69,21 @@ class Snap(EntityType):
     absolute = Boolean(
         default=True,
         description=u"tells us if the path stored is absolute.")
-    filepath = String(
+    filepaths = Bytes(
         required=True,
-        description=u"the snap file path.")
+        fulltextindexed=True,
+        description=u"the snap file paths.")
     dtype = String(
         required=True,
         indexed=True,
-        vocabulary=("CTM", "PNG", "JPEG", "JPG", "PDF"),
-        description=u"the file type: 'PDF', 'CTM', 'PNG', 'JPG' or 'JPEG' are supported.")
+        vocabulary=("CTM", "IM", "FOLD"),
+        description=u"the tools type: 'CTM', 'IM', 'FOLD'")
     sha1hex = String(
         maxsize=40,
         description=u"the SHA1 sum of the file.")
-    code = String(
-        maxsize=40,
-        description=u"a code associated to the snap.")
-    wave = SubjectRelation(
-        "Wave",
+    subject_measure = SubjectRelation(
+        "SubjectMeasure",
         cardinality="1*",
-        inlined=False)
-    scores = SubjectRelation(
-        "Score",
-        cardinality="*1",
         inlined=False)
 
 
@@ -133,8 +128,48 @@ class Wave(EntityType):
         description=u"a long description of the wave.")
     extra_answers = String(
         description=u"a list of closed possible extra answers.")
+    subject_measures = SubjectRelation(
+        "SubjectMeasure",
+        cardinality="*1",
+        inlined=False)
+
+
+class SubjectMeasure(EntityType):
+    """ An entity used to group within each wave, the snaps related to one
+        subject.
+
+    Attributes
+    ----------
+    identifier: String (mandatory)
+        a unique identifier for the entity.
+    name: String (mandatory)
+        a short description of the wave.
+
+    Relations
+    ---------
+    snaps: SubjectRelation
+        a snap is connected to one wave.
+    """
+    identifier = String(
+        required=True,
+        unique=True,
+        maxsize=64,
+        description=u"a unique identifier for the entity.")
+    name = String(
+        required=True,
+        fulltextindexed=True,
+        maxsize=256,
+        description=u"Subject's measure name")
     snaps = SubjectRelation(
         "Snap",
+        cardinality="*1",
+        inlined=False)
+    wave = SubjectRelation(
+        "Wave",
+        cardinality="1*",
+        inlined=False)
+    scores = SubjectRelation(
+        "Score",
         cardinality="*1",
         inlined=False)
 
@@ -174,8 +209,8 @@ class Score(EntityType):
         description=u"the user score.")
     extra_scores = String(
         description=u"the extra user scores.")
-    snap = SubjectRelation(
-        "Snap",
+    subject_measure = SubjectRelation(
+        "SubjectMeasure",
         cardinality="1*",
         inlined=False)
     scored_by = SubjectRelation(
