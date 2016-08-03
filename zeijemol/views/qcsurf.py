@@ -22,6 +22,7 @@ class QcSurf(View):
     """
     __regid__ = "mesh-qcsurf"
     div_id = "mesh-qcsurf"
+    naat_url = "http://neuroanatomy.github.io/"
 
     def call(self, fsdir, header, populationpath):
         """ Create a mesh from a CTM compressed mesh file.
@@ -34,7 +35,7 @@ class QcSurf(View):
         Parameters
         ----------
         fsdir: str
-            the freesurfer subject base directory: /fsdir/surf/hemi.white - 
+            the freesurfer subject base directory: /fsdir/surf/hemi.white -
             /fsdir/stats/hemi.aparc.stats
         header: list of str
             something to display in the viewer overlay.
@@ -52,14 +53,15 @@ class QcSurf(View):
                     "stats": os.path.join(
                         fsdir, "stats", "{0}.aparc.stats".format(hemi))
                 }
-        
-        # Construct the data accessor url   
+
+        # Construct the data accessor url
         ajaxcallback = self._cw.build_url("ajax", fname="get_ctm_rawdata")
 
         # Add tool tip
-        header += ["Press 'c' to change the texture."]
+        header += ["Press 'c' to change the texture."]       
 
         # Create javascript global variables
+        naat_logo_url = self._cw.data_url("images/naat_logo.png")
         jsctmworker = self._cw.data_url("qcsurf/js/CTMWorker.js")
         self.w(u'<script>')
         self.w(u'var meshoverlay="{0}";'.format("<br/>".join(header)))
@@ -92,6 +94,9 @@ class QcSurf(View):
         self.w(u'<span id="surface" class="select"> '
                '<span id="pial" class="button">Pial</span> '
                '<span id="white" class="button selected">White</span></span>')
+        self.w(u'<span id="naat"><a href="{1}" target="_blank"><img '
+                'class="button" src="{0}"></a></span>'.format(
+                    naat_logo_url, self.naat_url))
         self.w(u'</div>')
         self.w(u'<div id="overlay"></div>')
         self.w(u'<div id="container"></div>')
