@@ -17,7 +17,7 @@ var materials = [
     new THREE.MeshBasicMaterial({vertexColors: THREE.FaceColors}),
 ];
 var current_material = 0;
-var pop_stats;
+//var pop_stats;
 var encoded_mesh;
 var lines;
 var meshpath;
@@ -37,13 +37,13 @@ function get_new_data () {
         loadMesh();
     });
 }
-function population_statistics () {
+//function population_statistics () {
     // Load subject population stats
-    $.getJSON(populationpath, function(data) {
-	    pop_stats=data;
-	    console.log(pop_stats);
-    });
-}
+//    $.getJSON(populationpath, function(data) {
+//	    pop_stats=data;
+//	    console.log(pop_stats);
+//   });
+//}
 function init_gui() {	
 	// Connect button functions
 	$("#lh").click(selectHemisphere);
