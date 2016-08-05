@@ -49,7 +49,7 @@ function load_images() {
         }).bind("slider:ready slider:changed", function (event, data) {
             var slice_index = data.value;
             $("#"+orient).children(".slice-bar-text").html(
-                slice_index + " / " + triview_data.nb_slices[orient] / 2);
+                slice_index + " / " + triview_data.nb_slices[orient]);
             draw_img(ctx, images_stack[orient][slice_index]);
             set_brightness(canvas, triview_data.brightness);
         });
@@ -92,13 +92,13 @@ function cursor_changed(evt, canvas_el, orient){
     var pos = get_mouse_pos(canvas_el, evt);
     x = pos.x;
     y = pos.y;
-    console.log("XY", orient, x, y);
     if (orient=="axial") {
         var other_coords = {
             sagittal: Math.round(
                 x / triview_data["shapes"][orient][0] *
                 triview_data["nb_slices"]["sagittal"]),
             coronal: Math.round(
+                triview_data["nb_slices"]["coronal"] -
                 y / triview_data["shapes"][orient][1] *
                 triview_data["nb_slices"]["coronal"])
         };
@@ -124,7 +124,6 @@ function cursor_changed(evt, canvas_el, orient){
         };
     }
     $.each(other_coords, function( orient, cut_coord ) {
-        console.log(orient, cut_coord);
         $("#" + orient).find(".slice-bar").each(function () {
             $(this).simpleSlider("setValue", cut_coord);
         });

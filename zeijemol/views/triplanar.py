@@ -38,6 +38,8 @@ class TriplanarView(View):
         all the button with a 'triview-btn' class will be disabled during
         this step.
 
+        The code can display a single, two or three orientations view.
+
         Parameters
         ----------
         snap_entity: Entity (mandatory)
@@ -52,14 +54,23 @@ class TriplanarView(View):
         error = self.error_message.format(snap_entity.eid)
         brightness = 100
 
+        # Add JS and CSS resources for the sliders and triview
+        self._cw.add_js("triview/js/simple-slider.min.js")
+        self._cw.add_css("triview/css/simple-slider-volume.css")
+        self._cw.add_css("triview/css/triview.css")
+        self._cw.add_js("triview/js/triview.js")
+
         # Check inputs
         orientations = ["sagittal", "coronal", "axial"]
         shapes = {}
         nb_slices = {}
-        for orient in orientations:
+        for orient in file_data:
             # > check orientation
             if orient not in orientations:
                 self.w(u"<h1>{0}</h1>".format(error))
+                self.w(u"<script>")
+                self.w(u"disableTriViewBtn();")
+                self.w(u"</script>")
                 return
             # > check image sizes
             stack_size = None
@@ -71,15 +82,12 @@ class TriplanarView(View):
                         shapes[orient] = stack_size
                     elif stack_size != open_image.size:
                         self.w(u"<h1>{0}</h1>".format(error))
+                        self.w(u"<script>")
+                        self.w(u"disableTriViewBtn();")
+                        self.w(u"</script>")
                         return
-        shape = (nb_slices["sagittal"], nb_slices["coronal"],
-                 nb_slices["axial"])
-
-        # Add JS and CSS resources for the sliders and triview
-        self._cw.add_js("triview/js/simple-slider.min.js")
-        self._cw.add_css("triview/css/simple-slider-volume.css")
-        self._cw.add_css("triview/css/triview.css")
-        self._cw.add_js("triview/js/triview.js")
+        #shape = (nb_slices["sagittal"], nb_slices["coronal"],
+        #         nb_slices["axial"])
 
         # Add an hidden loading image
         html = "<div id='loading-msg' style='display: none;' align='center'>"
@@ -101,8 +109,7 @@ class TriplanarView(View):
                  "white;margin-bottom: 50px;'>{0} %</p>".format(brightness))
         html += "</div>"
         # > create image containers
-        for orient in orientations:
-            shape = shapes[orient]
+        for orient, shape in shapes.items():
             html += "<div id='{0}' class='subdiv'>".format(orient)
             html += "<h4 style='color: white;'>{0}</h4>".format(
                 orient.upper())
@@ -127,7 +134,7 @@ class TriplanarView(View):
             "dtype": data_type.lower(),
             "file_data": file_data,
             "ajaxcallback": ajaxcallback,
-            "orientations": orientations,
+            "orientations": file_data.keys(),
             "brightness": 100,
             "shapes": shapes,
             "nb_slices": nb_slices}
@@ -151,15 +158,13 @@ class TriplanarView(View):
 def get_b64_images(self):
     """ Ajax callback used to load images in the 'file_data' form in base64.
     """
-    snaps_filepaths = json.loads(self._cw.form["file_data"])
+    file_data = json.loads(self._cw.form["file_data"])
     output = {}
-    for anat_plane in ["sagittal", "coronal", "axial"]:
-        output[anat_plane] = {}
-        images = snaps_filepaths[anat_plane]
+    for orient, fpaths in file_data.items():
         encoded_images = []
-        for image in images:
-            with open(image, "rb") as image_file:
-                encoded_image = base64.b64encode(image_file.read())
+        for path in fpaths:
+            with open(path, "rb") as open_image:
+                encoded_image = base64.b64encode(open_image.read())
                 encoded_images.append(encoded_image)
-        output[anat_plane] = encoded_images
+        output[orient] = encoded_images
     return output

@@ -129,11 +129,11 @@ WAVE3_DATA = {
         "triplanar": {
             "filepaths": [
                 ("coronal", [TRIPLANAR_PATTERN.format("001", "C", index) for
-                             index in range(256)]),
+                             index in range(0, 256, 2)]),
                 ("axial", [TRIPLANAR_PATTERN.format("001", "A", index) for
-                           index in range(256)][::-1]),
+                           index in range(0, 256, 2)]),
                 ("sagittal", [TRIPLANAR_PATTERN.format("001", "S", index) for
-                              index in range(256)])],
+                              index in range(0, 256, 2)])],
             "viewer": "TRIPLANAR"
         },
         "surf": {
@@ -154,11 +154,11 @@ WAVE3_DATA = {
         "triplanar": {
             "filepaths": [
                 ("coronal", [TRIPLANAR_PATTERN.format("002", "C", index) for
-                             index in range(256)]),
+                             index in range(0, 256, 2)]),
                 ("axial", [TRIPLANAR_PATTERN.format("002", "A", index) for
-                           index in range(256)][::-1]),
+                           index in range(0, 256, 2)]),
                 ("sagittal", [TRIPLANAR_PATTERN.format("002", "S", index) for
-                              index in range(256)])],
+                              index in range(0, 256, 2)])],
             "viewer": "TRIPLANAR"
         },
         "surf": {
@@ -179,11 +179,11 @@ WAVE3_DATA = {
         "triplanar": {
             "filepaths": [
                 ("coronal", [TRIPLANAR_PATTERN.format("003", "C", index) for
-                             index in range(256)]),
+                             index in range(0, 256, 2)]),
                 ("axial", [TRIPLANAR_PATTERN.format("003", "A", index) for
-                           index in range(256)][::-1]),
+                           index in range(0, 256, 2)]),
                 ("sagittal", [TRIPLANAR_PATTERN.format("003", "S", index) for
-                              index in range(256)])],
+                              index in range(0, 256, 2)])],
             "viewer": "TRIPLANAR"
         },
         "surf": {
@@ -271,6 +271,41 @@ List of elements
 * elem 2.
 """
 WAVE4_DESC["filepath"] = "./data/doc.pdf"
+WAVE5_NAME = "wave_5"
+WAVE5_CATEGORY = "FreeSurfer"
+WAVE5_SCOREDEFS = ["ACCEPT", "PRESCRIBE MANUAL EDIT", "REJECT"]
+TRIPLANAR_PATTERN = "./data/{0}/t1/triplanar/snapshot-wm-{1}-{2}.png"
+WAVE5_DATA = {
+    "001": {
+        "snaps": {
+            "filepaths": [
+                ("axial", [TRIPLANAR_PATTERN.format("001", "A", index) for
+                           index in range(0, 256, 2)])],
+            "viewer": "TRIPLANAR"
+        }
+    },
+    "002": {
+        "snaps": {
+            "filepaths": [
+                ("axial", [TRIPLANAR_PATTERN.format("002", "A", index) for
+                           index in range(0, 256, 2)]),
+                ("coronal", [TRIPLANAR_PATTERN.format("002", "C", index) for
+                             index in range(0, 256, 2)])],
+            "viewer": "TRIPLANAR"
+        }
+    }
+}
+WAVE5_EXTRA = ["artefacts"]
+WAVE5_DESC = {}
+WAVE5_DESC["description"] = """
+Some doc about this wave
+------------------------
+
+List of elements
+
+* elem1.
+* elem 2.
+"""
 
 # Import new waves
 importer.insert(WAVE1_NAME, WAVE1_CATEGORY, WAVE1_DATA, WAVE1_DESC,
@@ -281,4 +316,6 @@ importer.insert(WAVE3_NAME, WAVE3_CATEGORY, WAVE3_DATA, WAVE3_DESC,
                 WAVE3_SCOREDEFS, WAVE3_EXTRA)
 importer.insert(WAVE4_NAME, WAVE4_CATEGORY, WAVE4_DATA, WAVE4_DESC,
                 WAVE4_SCOREDEFS, WAVE4_EXTRA)
+importer.insert(WAVE5_NAME, WAVE5_CATEGORY, WAVE5_DATA, WAVE5_DESC,
+                WAVE5_SCOREDEFS, WAVE5_EXTRA)
 
