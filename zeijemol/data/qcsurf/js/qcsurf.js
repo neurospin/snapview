@@ -137,7 +137,8 @@ function loadStats() {
 		tsurf[lines[i].split(/[ ]+/)[0]]=parseFloat(lines[i].split(/[ ]+/)[2]);
 		thick[lines[i].split(/[ ]+/)[0]]=parseFloat(lines[i].split(/[ ]+/)[4]);
 	}
-	$("#overlay").append("<br/>Regional Surface Area:<br />");
+    $("#overlay").append("<br/><div class='region-name'>Selected Region Name: -select with mouse hover a circle-</div>");
+	$("#overlay").append("Regional Surface Area:<br />");
 	drawFingerprint({variable:"SurfArea", data:tsurf});
 	$("#overlay").append("<br/>Regional Cortical Thickness:<br />");
 	drawFingerprint({variable:"ThickAvg", data:thick});
@@ -229,9 +230,13 @@ function drawFingerprint(param) {
 		p.x=x;
 		p.y=y;
 		var pp=p.matrixTransform(m);
-        document.getElementById("text").style.display = "block";
-		$("#text").css({left:pp.x,top:pp.y});
-		$("#text").text($(this).attr('title'));
+        //document.getElementById("text").style.display = "block";
+		//$("#text").css({left:pp.x,top:pp.y});
+        $(".region-name").html("Selected Region Name: " + $(this).attr('title'))
+		//$("#text").text($(this).attr('title'));
+	});
+	$(".region").mouseout(function(){
+        $(".region-name").html("Selected Region Name: -select with mouse hover a circle-")
 	});
 }
 function onWindowResize( event ) {
