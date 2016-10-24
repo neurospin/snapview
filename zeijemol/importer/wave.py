@@ -25,29 +25,19 @@ from cubicweb.server.utils import crypt_password
 from zeijemol.docgen.rst2html import rst2html
 
 
-class SnapsImporter(object):
-    """ This class enables us to add new snaps in CW instance.
-
-    Notes
-    -----
-    Here is an example of the definition of the 'relations' parameter:
-
-    ::
-
-        relations = [
-            ("CWUser", "in_group", "CWGroup")
-        ]
+class WaveImporter(object):
+    """ This class enables us to add/update new wave in a CW instance.
     """
     def __init__(self, instance_name, login, password):
-        """ Initialize the SeniorData class.
+        """ Initialize the WaveImporter class.
 
         Parameters
         ----------
-        instance_name: str
+        instance_name: str (mandatory)
             the name of the cubicweb instance based in the 'snapview' cube.
-        login: str
+        login: str (mandatory)
             a login.
-        password: str
+        password: str (mandatory)
             the corresponding password.
         """
         # Create a cw session
@@ -60,46 +50,61 @@ class SnapsImporter(object):
     #   Public Methods
     ###########################################################################
 
-    def insert(self, wave_name, wave_category, expression, code_expression,
-               wave_description, extra_answers=None):
+    def insert(self, wave_name, wave_category, wave_data, wave_description,
+               wave_score_definitions, wave_extra_answers=None, verbose=1):
         """ Insert a new wave of snaps.
 
         Parameters
         ----------
-        wave_name: str
+        wave_name: str (mandatory)
             the name of the current wave.
-        wave_category: str
+        wave_category: str (mandatory)
             a category used to filter waves.
-        expression: str
-            an expression that will be globed to get the snap files.
-        code_expression: str
-            a regular expression used to select a file code from a file path.
-        wave_description: str
-            the description of the wave formated in RST.
-        extra_answers: list of str (optional, default=None)
+        wave_data: dict (mandatory)
+            a dictionary structure of the form:
+            {<subject_id>: {<snap_names>: {filepaths: <filepaths_struct>,
+                                           viewer: <viewer_name>}}
+            where <filepaths_struct> is a list of paths ('[<paths>]') or a list
+            of 2-uplets containing a description and a list of paths
+            ('[(<description>, [<paths>])]'). Note that the <filepaths_struct>
+            element order is important and saved in the database.
+        wave_description: dict (mandatory)
+            a dictionnay with a mandatory 'description' key containing the
+            description of the wave formated in RST and an optional key
+            'filepath' containing a pdf documentation file path.
+        wave_score_definitions: list of str (mandatory)
+            a list of score definitions.
+        wave_extra_answers: list of str (optional, default=None)
             a list of closed possible extra answers.
+        verbose: int (optional, default 1)
+            control the verbosity level.
         """
-        # Get the snap files
-        snaps = glob.glob(expression)
-        if len(snaps) == 0:
-            raise ValueError(
-                "No snap found with regex '{0}'.".format(expression))
-
-        # Format the 'extra_answers' parameter if necessary
-        extra_answers = extra_answers or []
+        # Format the 'wave_extra_answers' parameter if necessary
+        wave_extra_answers = wave_extra_answers or []
 
         # Transform the RST documentation in HTML
-        wave_description = rst2html(wave_description)
+        description = rst2html(wave_description["description"])
 
         # Insert the wave entity if necessary
-        print("Inserting wave '{0}'...".format(wave_name))
+        if verbose > 0:
+            print("Inserting wave '{0}'...".format(wave_name))
+        # > link documentation file
+        fpath = wave_description.get("filepath", None)
+        # > create wave
         wave_struct = {
             "identifier": self._md5_sum(wave_name),
             "name": wave_name.replace("_", " "),
             "category": wave_category.replace("_", " "),
-            "description": wave_description,
-            "extra_answers": json.dumps(extra_answers)
+            "description": description,
+            "score_definitions": json.dumps(wave_score_definitions),
+            "extra_answers": json.dumps(wave_extra_answers)
         }
+        if fpath is not None:
+            ext = fpath.split(".")[-1].upper()
+            if ext != "PDF":
+                raise ValueError("{0}: only PDF documentation files are "
+                                 "accepted.".format(wave_name))
+            wave_struct["filepath"] = fpath
         wave_entity, wave_created = self._get_or_create_unique_entity(
             rql=("Any X Where X is Wave, X identifier "
                  "'{0}'".format(wave_struct["identifier"])),
@@ -109,31 +114,67 @@ class SnapsImporter(object):
         wave_eid = wave_entity.eid
 
         # Insert the snaps if necassary
-        print("Inserting '{0}' snaps...".format(len(snaps)))
-        for cnt, path in enumerate(snaps):
+        if verbose > 0:
+            print("Inserting '{0}' snapsets...".format(len(wave_data)))
+        for snapset_cnt, (sid, snap_data) in enumerate(wave_data.items()):
             # > display progress
-            ratio = (cnt + 1) / len(snaps)
-            self._progress_bar(ratio, title="SNAPS", bar_length=40)
-            # > get code identifier
-            values = set(re.findall(code_expression, path))
-            if len(values) == 1:
-                code = values.pop()
-            else:
-                raise ValueError(
-                    "Can't extract a single code with regex '{0}' on path "
-                    "'{1}'.".format(code_expression, path))
+            ratio = (snapset_cnt + 1.) / float(len(wave_data))
+            self._progress_bar(ratio, title="SNAPSET", bar_length=40)
+            # > create snapset entity
+            snapset_struct = {
+                "identifier": self._md5_sum("{0}_{1}".format(wave_name, sid)),
+                "name": sid
+            }
+            snapset_entity, snapset_created = (
+                self._get_or_create_unique_entity(
+                    rql=("Any X Where X is SnapSet, X identifier "
+                         "'{0}'".format(snapset_struct["identifier"])),
+                    check_unicity=True,
+                    entity_name="SnapSet",
+                    **self._u(snapset_struct)))
+            snapset_eid = snapset_entity.eid
+            # > insert associated snaps if not already created and add
+            # relations
+            if snapset_created:
+                self._set_unique_relation(
+                    snapset_eid, "wave", wave_eid, check_unicity=False)
+                self._set_unique_relation(
+                    wave_eid, "snapsets", snapset_eid, check_unicity=False)
+                self.insert_snaps(snapset_eid, wave_name, sid, snap_data)
+            elif verbose > 0:
+                print("Snapset '({0}-{1}-{2})' already imported.".format(
+                    wave_name, sid, snapset_eid))
+
+        # Commit changes
+        self.session.commit()
+
+    def insert_snaps(self, snapset_eid, wave_name, sid, snap_data):
+        """ Add 'Snap' viewers to a specific snapset.
+
+        Parameters
+        ----------
+        snapset_eid: int (mandatory)
+            the snapset eid.
+        wave_name: str (mandatory)
+            the wave name.
+        sid: str (mandatory)
+            the subject identifier.
+        snap_data: dict (mandatory)
+            a dictionary structure of the form:
+            {<snap_names>: {filepaths: <filepaths_struct>,
+                            viewer: <viewer_name>}}
+            where <filepaths_struct> is a list of paths ('[<paths>]') or a list
+            of 2-uplets containing a description and a list of paths
+            ('[(<description>, [<paths>])]'). Note that the <filepaths_struct>
+            element order is important and saved in the database.
+        """
+        for snap_name, snaps in snap_data.items():
             # > create entity
-            ext = path.split(".")[-1].upper()
-            with open(path, "rb") as open_file:
-                sha1hex = self._md5_sum(open_file.read(), algo="sha1")
             snap_struct = {
-                "identifier": self._md5_sum(path),
-                "name": os.path.basename(path).split(".")[0].replace("_", " "),
-                "absolute": True,
-                "filepath": os.path.abspath(path),
-                "dtype": ext,
-                "sha1hex": sha1hex,
-                "code": code
+                "identifier": self._md5_sum("{0}_{1}_{2}".format(
+                    wave_name, sid, snap_name)),
+                "name": snap_name.replace("_", " "),
+                "viewer": snaps["viewer"]
             }
             snap_entity, snap_created = self._get_or_create_unique_entity(
                 rql=("Any X Where X is Snap, X identifier "
@@ -142,14 +183,70 @@ class SnapsImporter(object):
                 entity_name="Snap",
                 **self._u(snap_struct))
             snap_eid = snap_entity.eid
-            # add relations
+            # > insert associated files if not already created and add
+            # relations
             if snap_created:
+                # >> add relations
                 self._set_unique_relation(
-                    wave_eid, "snaps", snap_eid, check_unicity=False)
+                    snap_eid, "snapset", snapset_eid, check_unicity=False)
                 self._set_unique_relation(
-                    snap_eid, "wave", wave_eid, check_unicity=False)
-
+                    snapset_eid, "snaps", snap_eid, check_unicity=False)
+                # >> insert files
+                file_cnt = 1
+                for file_data in snaps["filepaths"]:
+                    if isinstance(file_data, tuple):
+                        description, fpaths = file_data
+                        for fpath in fpaths:
+                            self.insert_file(snap_eid, fpath, file_cnt,
+                                            description=description)
+                            file_cnt += 1
+                    elif isinstance(file_data, basestring):
+                        self.insert_file(snap_eid, file_data, file_cnt)
+                        file_cnt += 1
+                    else:
+                        raise ValueError("'{0}' is not a path or a "
+                                         "2-uplet.".format(file_data))
+        # Commit changes
         self.session.commit()
+
+    def insert_file(self, snap_eid, fpath, order, description=None):
+        """ Add 'ExternalFile' to a specific snap.
+
+        Parameters
+        ----------
+        snap_eid: int (mandatory)
+            the snap eid.
+        fpath: str (mandatory)
+            the file path.
+        order: int (mandatory)
+            the file order.
+        description: str (optional, default None)
+            the file description.
+        """
+        ext = fpath.split(".")[-1].upper()
+        with open(fpath, "rb") as open_file:
+            sha1hex = self._md5_sum(open_file.read(), algo="sha1")
+        file_struct = {
+            "identifier": self._md5_sum(fpath),
+            "filepath": fpath,
+            "order": order,
+            "dtype": ext,
+            "sha1hex": sha1hex
+        }
+        if description is not None:
+            file_struct["description"] = description
+        file_entity, file_created = (
+            self._get_or_create_unique_entity(
+                rql=("Any X Where X is ExternalFile, X identifier "
+                     "'{0}'".format(file_struct["identifier"])),
+                check_unicity=True,
+                entity_name="ExternalFile",
+                **self._u(file_struct)))
+        file_eid = file_entity.eid
+        self._set_unique_relation(
+            file_eid, "snap", snap_eid, check_unicity=False)
+        self._set_unique_relation(
+            snap_eid, "files", file_eid, check_unicity=False)
 
     def add_user(self, user_name, password, group_name="users"):
         """ Add a new user in the database.
@@ -223,7 +320,7 @@ class SnapsImporter(object):
         m.update(path)
         return m.hexdigest()
 
-    def _progress_bar(self, ratio, title="", bar_length=40):
+    def _progress_bar(self, ratio, title="", bar_length=40, maxsize=20):
         """ Method to generate a progress bar.
 
         Parameters
@@ -234,14 +331,18 @@ class SnapsImporter(object):
             a title to identify the progress bar.
         bar_length: int (optional)
             the length of the bar that will be ploted.
+        maxsize: int (optional)
+            use to justify title.
         """
         progress = int(ratio * 100.)
         block = int(round(bar_length * ratio))
-        text = "\r{2} in Progress: [{0}] {1}%".format(
+        title = title.ljust(maxsize, " ")
+        text = "\r[{0}] {1}% {2}".format(
             "=" * block + " " * (bar_length - block), progress, title)
         sys.stdout.write(text)
+        sys.stdout.flush()
         if ratio == 1:
-            sys.stdout.write("\n")
+            print("")
 
     def _u(self, struct):
         """ Transform string to unicode

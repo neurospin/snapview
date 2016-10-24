@@ -21,6 +21,7 @@ var encoded_mesh;
 var lines;
 var meshpath;
 
+
 function get_new_data () {
     var ctmfile = fs_struct[hemi][surf]["mesh"];
     var statsfile = fs_struct[hemi][surf]["stats"];
@@ -36,23 +37,13 @@ function get_new_data () {
     });
 }
 
-function population_statistics () {
-    // do nothing. json population statistics already loaded
-}
-
 function init_gui() {
 	// Connect button functions
-    $("#lh").click(selectHemisphere);
-    $("#rh").click(selectHemisphere);
-    $("#pial").click(selectSurface);
-    $("#white").click(selectSurface);
-    $("#naat").click(goToCredits);
+	$("#lh").click(selectHemisphere);
+	$("#rh").click(selectHemisphere);
+	$("#pial").click(selectSurface);
+	$("#white").click(selectSurface);		
 }
-
-function goToCredits() {
-    window.location=credit_link;
-}
-
 function selectHemisphere() {
     hemi = this.id;
 	$("#hemisphere .button").removeClass("selected");
@@ -139,7 +130,8 @@ function loadStats() {
 		tsurf[lines[i].split(/[ ]+/)[0]]=parseFloat(lines[i].split(/[ ]+/)[2]);
 		thick[lines[i].split(/[ ]+/)[0]]=parseFloat(lines[i].split(/[ ]+/)[4]);
 	}
-	$("#overlay").append("<br/>Regional Surface Area:<br />");
+    $("#overlay").append("<br/><div class='region-name'>Selected Region Name: -select with mouse hover a circle-</div>");
+	$("#overlay").append("Regional Surface Area:<br />");
 	drawFingerprint({variable:"SurfArea", data:tsurf});
 	$("#overlay").append("<br/>Regional Cortical Thickness:<br />");
 	drawFingerprint({variable:"ThickAvg", data:thick});
@@ -231,9 +223,10 @@ function drawFingerprint(param) {
 		p.x=x;
 		p.y=y;
 		var pp=p.matrixTransform(m);
-        document.getElementById("text").style.display = "block";
-		$("#text").css({left:pp.x,top:pp.y});
-		$("#text").text($(this).attr('title'));
+        $(".region-name").html("Selected Region Name: " + $(this).attr('title'))
+	});
+	$(".region").mouseout(function(){
+        $(".region-name").html("Selected Region Name: -select with mouse hover a circle-")
 	});
 }
 function onWindowResize( event ) {

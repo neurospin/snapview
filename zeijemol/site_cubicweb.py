@@ -10,9 +10,9 @@ options = (
     ("json_population_stats", {
         "type": "string",
         "default": "",
-        "help": "the json file used to configure the population statistics for "
-                "freesurfer rating. A default json will be used if not"
-                " provided",
+        "help": "the json file used to configure the population statistics "
+                "for freesurfer naat tool rating. A default json will be used "
+                "if not provided",
         "group": "zeijemol",
         "level": 1,
     }),

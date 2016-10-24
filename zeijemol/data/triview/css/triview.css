@@ -1,0 +1,32 @@
+[class^=slider] {
+    display: inline-block;
+}
+
+.slice-img {
+    user-drag: none;
+    user-select: none;
+    border: 1px solid grey;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+.slice-img:hover {
+    cursor: crosshair;
+}
+
+.container {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    display: none;
+    background-color: black;
+    margin-bottom: 10px;
+    border:50px solid black;
+}
+
+.subdiv {
+    display: inline-block;
+    white-space: normal;
+}

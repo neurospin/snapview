@@ -24,7 +24,7 @@ class SnapPoweredByAction(Action):
 
     category = "footer"
     order = 3
-    title = u"Powered by NeuroSpin"
+    title = u"Powered by NSAp"
 
     def url(self):
         return u"http://i2bm.cea.fr/dsv/i2bm/Pages/NeuroSpin.aspx"

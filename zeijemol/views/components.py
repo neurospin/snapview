@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 ##########################################################################
 # NSAp - Copyright (C) CEA, 2016
 # Distributed under the terms of the CeCILL-B license, as published by
@@ -10,10 +9,16 @@
 # CW import
 from logilab.common.registry import yes
 from cubicweb.predicates import anonymous_user
+from cubicweb.predicates import match_user_groups
+from cubicweb.predicates import authenticated_user
 from cubicweb.web import component
 from cubicweb.web.views.boxes import SearchBox
 from cubicweb.web.views.bookmark import BookmarksBox
 from cubicweb.web.views.basecomponents import HeaderComponent
+from cubicweb.web.views.basecomponents import AnonUserStatusLink
+from cubicweb.web.views.basecomponents import AuthenticatedUserStatus
+from logilab.common.decorators import monkeypatch
+from cubicweb.web.views.basecontrollers import LogoutController
 
 
 class CWWaveBox(component.CtxComponent):
@@ -35,66 +40,65 @@ class CWWaveBox(component.CtxComponent):
         """
         # Sort waves by categories
         rset = self._cw.execute(
-            "Any N, W, C Where W is Wave, W name N, W category C")
+            "Any W, C Where W is Wave, W category C")
         struct = {}
-        for index, (name, eid, category) in enumerate(rset):
-            struct.setdefault(category, []).append({
-                "name": name,
-                "description": rset.get_entity(index, 1).description
-            })
+        for index, (_, category) in enumerate(rset):
+            struct.setdefault(category, []).append(rset.get_entity(index, 0))
 
         # Display a wave selection component
         w(u'<div class="btn-toolbar">')
         w(u'<div class="btn-group-vertical btn-block">')
-        index = 0
         for category, waves in struct.items():
-            w(u'<div id="category-component">')
-            w(u'<b>Category:</b> {0}'.format(category))
-            for wave_srtruct in waves:
-                wave_name = wave_srtruct["name"]
-                wave_description = wave_srtruct["description"]
+
+            # Find unfinished waves
+            wave_to_display = []
+            for wave_entity in waves:
+                wave_name = wave_entity.name
                 wave_rset = self._cw.execute(
-                    "Any S Where W is Wave, W name '{0}', W snaps S".format(
-                        wave_name))
-                display_wave_button = False
-                for index_wave in range(wave_rset.rowcount):
-                    snap_entity = wave_rset.get_entity(index_wave, 0)
-                    scores = [
-                        e for e in snap_entity.scores
-                        if e.scored_by[0].login == self._cw.session.login]
-                    if len(scores) == 0:
-                        display_wave_button = True
-                        break
-                wave_rset = [
-                    item for index_wave, item in enumerate(wave_rset)
-                    if len(wave_rset.get_entity(index_wave, 0).scores) == 0]
-                if display_wave_button:
-                    # Create two buttons, one for the wave selection and one
-                    # for the wave documentation
+                    "Any S Where W is Wave, W name '{0}', W snapsets S, "
+                    "S scores SC, SC scored_by U, U login '{1}'".format(
+                        wave_name, self._cw.session.login))
+                snapsets_rset = self._cw.execute(
+                    "Any COUNT(S) Where W is Wave, W name '{0}', "
+                    "W snapsets S".format(wave_name))
+                display_wave_button = True
+                if len(wave_rset) != snapsets_rset[0][0]:
+                    wave_to_display.append(wave_entity)
+
+            # Display category only if one wave is not finished in this
+            # category
+            if len(wave_to_display) > 0:
+                w(u'<div id="category-component">')
+                w(u'<b>Category:</b> {0}'.format(category))
+
+                # Create two buttons, one for the wave selection and one
+                # for the wave documentation
+                for wave_entity in wave_to_display:
+                    # > buttons
+                    wave_name = wave_entity.name
                     href = self._cw.build_url(
                         "view", vid="gallery-view", wave=wave_name,
                         title=self._cw._("Please rate this item..."))
+                    w(u'<div id="wave">')
                     w(u'<div id="wave-rate">')
                     w(u'<a class="btn fullbtn btn-default" href="{0}">'.format(
                         href))
                     w(u'{0}</a>'.format(wave_name))
                     w(u'</div>')
                     w(u'<div id="wave-help">')
-                    w(u'<a class="btn fullbtn btn-warning" data-toggle='
-                      '"collapse" data-target="#doc-{0}">'.format(index))
+                    dochref = self._cw.build_url(
+                        "view", vid="zeijemol-documentation",
+                        wave_eid=wave_entity.eid)
+                    w(u'<a class="btn fullbtn btn-warning" href="{0}">'.format(
+                        dochref))
                     w(u'help</a>')
                     w(u'</div>')
-                    w(u'<div id="floating-clear"/>')
+                    w(u'</div>')
 
-                    # Create a div that will be show or hide when the doc
-                    # button is clicked
-                    w(u'<div id="doc-{0}" class="collapse">'.format(index))
-                    w(u'<a>{0}</a>'.format(wave_description))
-                    w(u"</div>")
+                # End category
+                w(u'</div>')
 
-                    # Increment index
-                    index += 1
-            w(u'</div>')
+        # End wave selection
         w(u'</div>')
         w(u'</div>')
 
@@ -103,7 +107,7 @@ class StatusButton(HeaderComponent):
     """ Build a status button displayed in the header.
     """
     __regid__ = "status-snapview"
-    __select__ = yes()  # no need for a cnx
+    __select__ = authenticated_user()
     context = u"header-right"
 
     def render(self, w):
@@ -117,7 +121,7 @@ class RatingsButton(HeaderComponent):
     Only the managers have accessed to this functionality.
     """
     __regid__ = "ratings-snapview"
-    __select__ = yes()  # no need for a cnx
+    __select__ = authenticated_user() & match_user_groups("managers")
     context = u"header-right"
 
     def render(self, w):
@@ -129,9 +133,35 @@ class RatingsButton(HeaderComponent):
                 self._cw.build_url("view", vid="ratings-view")))
 
 
+class LogOutButton(AuthenticatedUserStatus):
+    """ Close the current session.
+    """
+    __select__ = authenticated_user()
+
+    def render(self, w):
+        self._cw.add_css("cubicweb.pictograms.css")
+        w(u"<a href='{0}' class='button icon-user'>{1}</a>".format(
+            self._cw.build_url("logout"), self._cw.session.login))
+
+
+@monkeypatch(LogoutController)
+def goto_url(self):
+    """ In http auth mode, url will be ignored
+    In cookie mode redirecting to the index view is enough : either
+    anonymous connection is allowed and the page will be displayed or
+    we'll be redirected to the login form.
+    """
+    msg = self._cw._('you have been logged out')
+    return self._cw.base_url()
+
+
+
 def registration_callback(vreg):
     vreg.register(RatingsButton)
     vreg.register(CWWaveBox)
     vreg.register(StatusButton)
+    vreg.register(LogOutButton)
     vreg.unregister(BookmarksBox)
     vreg.unregister(SearchBox)
+    vreg.unregister(AnonUserStatusLink)
+    vreg.unregister(AuthenticatedUserStatus)

@@ -21,7 +21,7 @@ from cubicweb.view import View
 class Status(View):
     """ Custom view to display rate status.
 
-    Depending on your rights you will see the your own rate status or a bunch
+    Depending on your rights you will see your own rate status or a bunch
     of people rates.
     """
     __regid__ = "status-view"
@@ -31,84 +31,108 @@ class Status(View):
         """
         # Get all the rated snaps ordered by wave name and by raters
         rset = self._cw.execute(
-            "Any WN, SC, UN Where W is Wave, W name WN, W snaps S, "
-            "S scores R, R score SC, R scored_by U, U login UN")
-        snaps_struct = {}
+            "Any WN, SC, UN Where W is Wave, W name WN, W snapsets S, "
+            "S scores R, R score SC, R scored_by U, "
+            "U login UN")
+        if rset.rowcount == 0:
+            self.w(u"<h1>No score in the database yet.</h1>")
+        snapsets_struct = {}
         for wave_name, score, rater in rset:
-            snaps_struct.setdefault(wave_name, {}).setdefault(
+            snapsets_struct.setdefault(wave_name, {}).setdefault(
                 rater, []).append(score)
 
-        # Construct all table rows
-        labels = ["UID", "Wave name", "Number of rates",
-                  "Number of Good rates", "Number of Bad rates"]
-        records = []
-        for wave_name, wave_struct in snaps_struct.items():
+        # Get the waves possible scores, ie. table headers
+        rset = self._cw.execute(
+            "Any WN, SC Where W is Wave, W name WN, W score_definitions SC")
+        waves_struct = {}
+        for wave_name, score_definition in rset:
+            waves_struct[wave_name] = json.loads(score_definition)
+
+        # Construct all table: one for each wave
+        for index, wave_name in enumerate(snapsets_struct):
+
+            # Get wave data and labels
+            labels = ["UID", "Number of rates"] + waves_struct[
+                wave_name]
+            records = []
+            wave_struct = snapsets_struct[wave_name]
 
             # Get the number of snaps associated to the current wave
             rset = self._cw.execute("Any COUNT(S) Where W is Wave, W name "
-                                    "'{0}', W snaps S".format(wave_name))
-            nb_of_snaps = rset[0][0]
+                                    "'{0}', W snapsets S".format(wave_name))
+            nb_of_snapsets = rset[0][0]
 
             # Fill the record
             for rater, scores in wave_struct.items():
                 nb_rates = len(scores)
-                nb_good = scores.count("Good")
-                nb_bad = scores.count("Bad")
-                records.append([
+                rater_record = [
                     rater,
-                    wave_name,
-                    "{0}/{1}".format(nb_rates, nb_of_snaps),
-                    "{0}/{1}".format(nb_good, nb_rates),
-                    "{0}/{1}".format(nb_bad, nb_rates)])
+                    "{0}/{1}".format(nb_rates, nb_of_snapsets)]
+                for score_definition in waves_struct[wave_name]:
+                    number_score_definitions = scores.count(score_definition)
+                    rater_record.append("{0}/{1}".format(
+                        number_score_definitions, nb_rates))
+                records.append(rater_record)
 
-        # Call JTableView for html generation of the table
-        self.wview("jtable-clientside", None, "null", labels=labels,
-                   records=records, csv_export=True,
-                   elts_to_sort=["UID", "Wave name"], title="Status...")
+            # Call JTableView for html generation of the table
+            self.wview("jtable-clientside", None, "null", labels=labels,
+                       records=records, csv_export=True, index=index,
+                       elts_to_sort=["UID"],
+                       title="{0} status".format(wave_name))
 
 
 class Ratings(View):
     """ Custom view to display rate status per subject.
 
-    This view is deticated to managers that have access to all of the people
+    This view is usefull for managers that have access to all of the people
     rates.
-
-    This view use the optional 'code' Snap entity parameter and raise an
-    excaption if this attribute has not been set properly.
     """
     __regid__ = "ratings-view"
 
     def call(self, **kwargs):
         """ Create the rates table.
         """
-        # Get all the rated snaps ordered by wave name and code
+        # Get all the rated snaps ordered by wave name and by raters
         rset = self._cw.execute(
-            "Any WN, C, SC Where W is Wave, W name WN, W snaps S, "
-            "S code C, S scores R, R score SC")
-        snaps_struct = {}
-        for index, row in enumerate(rset):
-            wave_name = row[0]
-            code = row[1]
-            snaps_struct.setdefault(wave_name, {}).setdefault(code, []).append(
-                row[2])
+            "Any WN, SN, D, SC, ESC, UN Where W is Wave, W name WN, "
+            "W snapsets S, S name SN, S scores R, R creation_date D, "
+            "R score SC, R extra_scores ESC, R scored_by U, U login UN")
+        if rset.rowcount == 0:
+            self.w(u"<h1>No score in the database yet.</h1>")
+        snapsets_struct = {}
+        for wave_name, sid, timestamp, score, extra_score, rater in rset:
+            snapsets_struct.setdefault(wave_name, {}).setdefault(
+                rater, []).append((timestamp, score, extra_score, sid))
 
-        # Construct all table rows
-        labels = ["Code", "Wave name", "Number of rates",
-                  "Number of Good rates", "Number of Bad rates", "Score (%)"]
+        # Get the waves possible scores, ie. table headers
+        rset = self._cw.execute(
+            "Any WN, SC Where W is Wave, W name WN, W score_definitions SC")
+        waves_struct = {}
+        for wave_name, score_definition in rset:
+            waves_struct[wave_name] = json.loads(score_definition)
+
+        # Construct all table
+        labels = ["UID", "TIMESTAMP", "WAVE NAME", "SID", "ANSWER",
+                  "EXTRA ANSWERS"]
         records = []
-        for wave_name, wave_struct in snaps_struct.items():
-            for code, rates in wave_struct.items():
-                nb_good = rates.count("Good")
-                nb_bad = rates.count("Bad")
-                nb_rates = nb_good + nb_bad
-                score = "{0:.3f}".format(nb_good / nb_rates * 100)
-                records.append([code, wave_name, str(nb_rates), str(nb_good),
-                                str(nb_bad), score])
+        for index, wave_name in enumerate(snapsets_struct):
+
+            # Fill the record
+            wave_struct = snapsets_struct[wave_name]
+            for rater, scores_struct in wave_struct.items():
+                for timestamp, answers, extra_answers, sid in scores_struct:
+                    extra_answers = json.loads(extra_answers)
+                    if not isinstance(extra_answers, list):
+                        extra_answers = [extra_answers]
+                    extra_answers = ",".join(extra_answers)
+                    records.append([rater, timestamp.isoformat(), wave_name,
+                                    sid, answers, extra_answers])
 
         # Call JTableView for html generation of the table
         self.wview("jtable-clientside", None, "null", labels=labels,
-                   records=records, csv_export=True,
-                   elts_to_sort=["Code", "Wave name"], title="Ratings...")
+                   records=records, csv_export=True, index=index,
+                   elts_to_sort=["UID"],
+                   title="Ratings".format(wave_name))
 
 
 class JTableView(View):
@@ -119,7 +143,7 @@ class JTableView(View):
     div_id = "jtable-clientside"
 
     def call(self, labels, records, title, csv_export=True,
-             elts_to_sort=None,
+             elts_to_sort=None, index=0,
              data_table_url="https://cdn.datatables.net/1.10.10",
              jquery_js="http://code.jquery.com/jquery-1.11.3.min.js",
              jquery_url="https://code.jquery.com/ui/1.11.3",
@@ -143,6 +167,9 @@ class JTableView(View):
             if True an export button will be available.
         elts_to_sort: list (optional, default [])
             labels of the columns to be sorted
+        index: int (optional, default 0)
+            increment this parameter to insert multiple tables in the same
+            page.
         """
         # Set default element to sort
         if elts_to_sort is None:
@@ -201,7 +228,7 @@ class JTableView(View):
         html += "var sort_dir = 'asc';"
 
         # > create the table
-        html += "var table = $('#the_table').dataTable( { "
+        html += "var table = $('#the_table_{0}').dataTable( {{ ".format(index)
         html += "serverSide: true,"
 
         # > set the ajax callback to fill dynamically the table
@@ -317,7 +344,7 @@ class JTableView(View):
             f = StringIO()
             writer = csv.writer(f, delimiter=';')
             # write the headers
-            writer.writerow(["ID"] + labels)
+            writer.writerow(labels)
             # write all the rows
             writer.writerows(records)
             # get the csv result as string
@@ -349,7 +376,7 @@ class JTableView(View):
         html += "<h1>{0}</h1>".format(title)
 
         # > display the table in the body
-        html += "<table id='the_table' class='cell-border display'>"
+        html += "<table id='the_table_{0}' class='cell-border display'>".format(index)
         html += "<thead></thead>"
         html += "<tbody></tbody>"
         html += "</table>"

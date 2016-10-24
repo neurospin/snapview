@@ -6,5 +6,4 @@
 # for details.
 ##########################################################################
 
-from snaps import SnapsImporter
-from mesh2ctm import fsmesh2ctm
+from wave import WaveImporter

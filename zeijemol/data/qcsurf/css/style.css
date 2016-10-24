@@ -58,9 +58,14 @@
 	background-color:lightBlue !important;
 	color:black;
 }
+.hemisphere {
+	border:thin solid lightBlue;
+}
+.surface {
+	border:thin solid lightBlue;
+}
 .button, .menu {
 	padding:5px;
-	border:thin solid lightBlue;
 }
 .button:hover, .menu:hover {
 	background-color:lightGrey;

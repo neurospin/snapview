@@ -22,8 +22,9 @@ class QcSurf(View):
     """
     __regid__ = "mesh-qcsurf"
     div_id = "mesh-qcsurf"
+    naat_url = "http://neuroanatomy.github.io/"
 
-    def call(self, fsdir, header, populationpath):
+    def call(self, filepaths, header, populationpath):
         """ Create a mesh from a CTM compressed mesh file.
 
         This procedure expect to find the freesurfer files in the standard
@@ -33,44 +34,61 @@ class QcSurf(View):
 
         Parameters
         ----------
-        fsdir: str
-            the freesurfer subject base directory: /fsdir/surf/hemi.white -
-            /fsdir/stats/hemi.aparc.stats
+        filepaths: list of str
+            the path to the FreeSurfer surface and stat files:
+            /fsdir/surf/<hemi>.white -
+            /fsdir/surf/<hemi>.pial -
+            /fsdir/stats/<hemi>.aparc.stats
+            Six files are expected.
         header: list of str
             something to display in the viewer overlay.
         populationpath: str
             a path to the population statistics.
         """
-        # load population statistics
-        with open(populationpath, 'r') as _file:
-            stats_pop = json.load(_file)
+        # Check inputs
+        if len(filepaths) != 6:
+            raise ValueError("Fatal Error: six files are expected "
+                             "'{0}'.".format(header))
 
         # Build the path to the freesurfer images
         fs_struct = {}
         for hemi in ["rh", "lh"]:
             fs_struct[hemi] = {}
             for surf in ["white", "pial"]:
+                name_surf = "{0}.{1}.ctm".format(hemi, surf)
+                name_stats = "{0}.aparc.stats".format(hemi)
+                surffiles = [path for path in filepaths
+                             if path.endswith(name_surf)]
+                statsfiles = [path for path in filepaths
+                              if path.endswith(name_stats)]
+                for struct in (surffiles, statsfiles):
+                    if len(struct) != 1:
+                        raise ValueError(
+                            "Fatal Error: one surface and one stat file "
+                            "expected '{0}'.".format(header))
                 fs_struct[hemi][surf] = {
-                    "mesh": os.path.join(
-                        fsdir, "surf", "{0}.{1}.ctm".format(hemi, surf)),
-                    "stats": os.path.join(
-                        fsdir, "stats", "{0}.aparc.stats".format(hemi))
+                    "mesh": surffiles[0],
+                    "stats": statsfiles[0]
                 }
+
+        # Load the population statistic
+        with open(populationpath, "r") as open_file:
+            population_stats = json.load(open_file)
 
         # Construct the data accessor url
         ajaxcallback = self._cw.build_url("ajax", fname="get_ctm_rawdata")
 
         # Add tool tip
-        header += ["Press 'c' to change the texture."]
-        logo_link = self._cw.data_url("images/naat_logo.png")
-        credit_link = "http://neuroanatomy.github.io/"
+        header += ["Press 'c' to change the texture."]       
+
         # Create javascript global variables
+        naat_logo_url = self._cw.data_url("images/naat_logo.png")
         jsctmworker = self._cw.data_url("qcsurf/js/CTMWorker.js")
         self.w(u'<script>')
         self.w(u'var meshoverlay="{0}";'.format("<br/>".join(header)))
-        self.w(u'var credit_link="{0}";'.format(credit_link))
         self.w(u'var jsctmworker="{0}";'.format(jsctmworker))
-        self.w(u'var pop_stats={0};'.format(json.dumps(stats_pop)))
+        self.w(u'var pop_stats={0};'.format(json.dumps(population_stats)))
+        self.w(u'var populationpath="{0}";'.format(populationpath))
         self.w(u'var ajaxcallback="{0}";'.format(ajaxcallback))
         self.w(u'var fs_struct={0};'.format(json.dumps(fs_struct)))
         self.w(u'var hemi="rh";')
@@ -92,17 +110,15 @@ class QcSurf(View):
         self.w(u'<div id="text"></div>')
         self.w(u'<div id="viewer">')
         self.w(u'<div id="toolbar">')
-
         self.w(u'<span id="hemisphere" class="select"> '
                '<span id="lh" class="button">Left</span> '
                '<span id="rh" class="button selected">Right</span></span>')
         self.w(u'<span id="surface" class="select"> '
                '<span id="pial" class="button">Pial</span> '
                '<span id="white" class="button selected">White</span></span>')
-        self.w(u'<div align="right">')
-        self.w(u'<img id="naat" src="{}">'.format(logo_link))
-        self.w(u'</div>')
-
+        self.w(u'<span id="naat"><a href="{1}" target="_blank"><img '
+                'class="button" src="{0}"></a></span>'.format(
+                    naat_logo_url, self.naat_url))
         self.w(u'</div>')
         self.w(u'<div id="overlay"></div>')
         self.w(u'<div id="container"></div>')
@@ -112,7 +128,6 @@ class QcSurf(View):
         self._cw.add_js("qcsurf/js/qcsurf.js")
         self.w(u'<script>')
         self.w(u'init_gui();')
-        self.w(u'population_statistics();')
         self.w(u'init_3d();')
         self.w(u'get_new_data();')
         self.w(u'animate();')
