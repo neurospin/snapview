@@ -99,6 +99,7 @@ class WaveImporter(object):
             "score_definitions": json.dumps(wave_score_definitions),
             "extra_answers": json.dumps(wave_extra_answers)
         }
+
         if fpath is not None:
             ext = fpath.split(".")[-1].upper()
             if ext != "PDF":

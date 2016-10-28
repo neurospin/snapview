@@ -18,7 +18,7 @@ from numpy.random import choice
 from cgi import parse_qs
 from cubicweb.view import View
 # TODO: change
-import cubes.snapview as zeijemol
+import cubes.zeijemol as zeijemol
 
 
 class Gallery(View):
@@ -41,6 +41,7 @@ class Gallery(View):
         # Get the wave extra answers
         rset = self._cw.execute("Any E Where W is Wave, W name '{0}', "
                                 "W extra_answers E".format(wave_name))
+
         extra_answers = json.loads(rset[0][0])
 
         # Select the snapset to be rated: use the internal connection in order

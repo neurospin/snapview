@@ -205,9 +205,9 @@ class ExternalFile(EntityType):
         description=u"the SHA1 sum of the file.")
     dtype = String(
         required=True,
-        vocabulary=("CTM", "STATS", "PNG", "JPEG", "JPG", "PDF"),
-        description=(u"the file type: 'PDF', 'CTM', 'STATS', 'PNG', 'JPG' or "
-                      "'JPEG' are supported."))
+        vocabulary=("CTM", "STATS", "PNG", "JPEG", "JPG", "PDF", "JSON"),
+        description=(u"the file type: 'PDF', 'CTM', 'STATS', 'PNG', 'JPG', "
+                     "JSON or 'JPEG' are supported."))
     snap = SubjectRelation(
         "Snap",
         cardinality="+*",
