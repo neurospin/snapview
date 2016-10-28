@@ -55,12 +55,10 @@ class QcSurf(View):
         for hemi in ["rh", "lh"]:
             fs_struct[hemi] = {}
             for surf in ["white", "pial"]:
-                name_surf = "{0}.{1}.ctm".format(hemi, surf)
-                name_stats = "{0}.aparc.stats".format(hemi)
                 surffiles = [path for path in filepaths
-                             if path.endswith(name_surf)]
+                             if hemi in path and surf in path]
                 statsfiles = [path for path in filepaths
-                              if path.endswith(name_stats)]
+                              if hemi in path and "stats" in path]
                 for struct in (surffiles, statsfiles):
                     if len(struct) != 1:
                         raise ValueError(
