@@ -14,7 +14,7 @@ import sys
 import getpass
 import glob
 
-# Piws import
+# Zeijemol import
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 from zeijemol.importer import WaveImporter
 

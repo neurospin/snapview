@@ -17,8 +17,7 @@ from numpy.random import choice
 # CW import
 from cgi import parse_qs
 from cubicweb.view import View
-# TODO: change
-import cubes.snapview as zeijemol
+import cubes.zeijemol as zeijemol
 
 
 class Gallery(View):
@@ -26,6 +25,7 @@ class Gallery(View):
     """
     __regid__ = "gallery-view"
     extra_answers_description = u"Justify rating"
+    allowed_viewers = ("FILE", "SURF", "TRIPLANAR")
 
     def call(self, **kwargs):
         """ Create the rate form.
@@ -37,6 +37,9 @@ class Gallery(View):
             kwargs.update(parse_qs(param))
         title = kwargs["title"][0]
         wave_name = kwargs["wave"][0]
+
+        # Add script to resize iframe as content
+        #self._cw.add_js("triview/js/resize-iframe.js")
 
         # Get the wave extra answers
         rset = self._cw.execute("Any E Where W is Wave, W name '{0}', "
@@ -136,7 +139,7 @@ class Gallery(View):
         # Check that all the viewers are declared
         in_error = False
         for snap_entity in snapset_entity.snaps:
-            if snap_entity.viewer not in ("FILE", "SURF", "TRIPLANAR"):
+            if snap_entity.viewer not in self.allowed_viewers:
                 error = ("Can't find the appropriate viewer. Please contact "
                          "the service administrator specifying the '{0}' "
                          "wave viewer '{1}' is not responding "
@@ -187,11 +190,16 @@ class Gallery(View):
                         file_data[key] = [
                             elem[1] for elem in sorted(file_data[key],
                                                        key=lambda x: x[0])]
+                    href = self._cw.build_url(
+                        vid="triplanar-view", snap_eid=snap_entity.eid,
+                        file_data=json.dumps(file_data), data_type=data_type)
                     self.w(u'<div id="gallery-triplanar" class="leftblock">')
-                    self.wview("triplanar-view", None, 'null',
-                               snap_entity=snap_entity, file_data=file_data,
-                               data_type=data_type)
+                    self.w(u'<iframe  frameborder="0" scrolling="auto" s'
+                            'tyle="width:100%; height:1000px" '
+                            'src="{0}">'.format(
+                                href))
                     self.w(u'</div>')
+                    self.w(u'</iframe>')
                 # > display the surfaces
                 elif snap_entity.viewer == "SURF":
                     self.w(u'<div id="gallery-img">')

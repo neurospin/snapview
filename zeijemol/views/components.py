@@ -21,23 +21,27 @@ from logilab.common.decorators import monkeypatch
 from cubicweb.web.views.basecontrollers import LogoutController
 
 
-class CWWaveBox(component.CtxComponent):
+class CWWaveBox(HeaderComponent):
     """ Class that generate a left box on the web browser to access all the
     score waves.
 
     It will appear on the left and contain the wave names.
     """
     __regid__ = "browse-waves"
-    __select__ = (component.CtxComponent.__select__ & ~anonymous_user())
-    title = u"Waves"
-    context = "left"
-    order = 0
+    __select__ = authenticated_user()
+    context = u"header-left"
 
-    def render_body(self, w, **kwargs):
+    def render(self, w, **kwargs):
         """ Method that creates the wave navigation box.
 
         This method displays also the user status for each wave.
         """
+        # Create a drop down menu
+        w(u'<div class="dropdown">')
+        w(u'<a href="#" class="dropdown-toggle icon-status" data-toggle="dropdown" '
+           'role="button" aria-haspopup="true" aria-expanded="false">'
+           'select wave <span class="caret"></span></a>')
+
         # Sort waves by categories
         rset = self._cw.execute(
             "Any W, C Where W is Wave, W category C")
@@ -46,8 +50,7 @@ class CWWaveBox(component.CtxComponent):
             struct.setdefault(category, []).append(rset.get_entity(index, 0))
 
         # Display a wave selection component
-        w(u'<div class="btn-toolbar">')
-        w(u'<div class="btn-group-vertical btn-block">')
+        w(u'<ul class="dropdown-menu">')
         for category, waves in struct.items():
 
             # Find unfinished waves
@@ -68,8 +71,8 @@ class CWWaveBox(component.CtxComponent):
             # Display category only if one wave is not finished in this
             # category
             if len(wave_to_display) > 0:
-                w(u'<div id="category-component">')
-                w(u'<b>Category:</b> {0}'.format(category))
+                w(u'<li><b>Category:</b> {0}</li>'.format(category))
+                w(u'<li role="separator" class="divider"></li>')
 
                 # Create two buttons, one for the wave selection and one
                 # for the wave documentation
@@ -79,27 +82,23 @@ class CWWaveBox(component.CtxComponent):
                     href = self._cw.build_url(
                         "view", vid="gallery-view", wave=wave_name,
                         title=self._cw._("Please rate this item..."))
-                    w(u'<div id="wave">')
-                    w(u'<div id="wave-rate">')
-                    w(u'<a class="btn fullbtn btn-default" href="{0}">'.format(
-                        href))
-                    w(u'{0}</a>'.format(wave_name))
-                    w(u'</div>')
-                    w(u'<div id="wave-help">')
                     dochref = self._cw.build_url(
                         "view", vid="zeijemol-documentation",
                         wave_eid=wave_entity.eid)
-                    w(u'<a class="btn fullbtn btn-warning" href="{0}">'.format(
-                        dochref))
-                    w(u'help</a>')
+                    w(u'<li>')
+                    w(u'<div>')
+                    w(u'<a href="{0}">{1}</a>'.format(href, wave_name))
+                    w(u'<a class="glyphicon glyphicon-plus toolbar" '
+                       'href="{0}"></a>'.format(dochref))
                     w(u'</div>')
-                    w(u'</div>')
+                    w(u'</li>')
 
-                # End category
-                w(u'</div>')
+            w(u'<li><br/></li>')
+
+        # End component
+        w(u'</ul>')
 
         # End wave selection
-        w(u'</div>')
         w(u'</div>')
 
 

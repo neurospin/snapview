@@ -10,6 +10,7 @@
 # System import
 import base64
 import json
+import os
 from PIL import Image
 
 # CW import
@@ -21,13 +22,13 @@ class TriplanarView(View):
     """ Dynamic volume slicer from 'coronal', 'axial' and 'sagittal' stacks.
     """
     __regid__ = "triplanar-view"
-
+    templatable = False
     # This message will be formated with the snap eid
     error_message = ("Triplanar view not responding. Please contact the "
                      "service administrator specifying the the snap code "
                      "'{0}'.")
 
-    def call(self, snap_entity, file_data, data_type):
+    def call(self): #, snap_eid, file_data, data_type):
         """ Create the viewer: orign is at the bottom left corner of the image,
         thus the stack ordering must be:
         axial: I->S
@@ -42,8 +43,8 @@ class TriplanarView(View):
 
         Parameters
         ----------
-        snap_entity: Entity (mandatory)
-            the snap CW entity.
+        snap_eid: Entity (mandatory)
+            the snap CW entity eid.
         file_data: dict (mandatory)
             the 'coronal', 'axial' and 'sagittal' stack names as keys with
             a list of ordered image files as value.
@@ -51,14 +52,24 @@ class TriplanarView(View):
             the image to display extension.
         """
         # Define parameters
-        error = self.error_message.format(snap_entity.eid)
+        snap_eid = self._cw.form["snap_eid"]
+        file_data = json.loads(self._cw.form["file_data"])
+        data_type = self._cw.form["data_type"]
+        error = self.error_message.format(snap_eid)
         brightness = 100
 
         # Add JS and CSS resources for the sliders and triview
-        self._cw.add_js("triview/js/simple-slider.min.js")
-        self._cw.add_css("triview/css/simple-slider-volume.css")
-        self._cw.add_css("triview/css/triview.css")
-        self._cw.add_js("triview/js/triview.js")
+        self.w(u'<script type="text/javascript" '
+                'src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/'
+                'jquery.min.js"></script>')
+        for path in ("triview/js/simple-slider.min.js",
+                     "triview/js/triview.js"):
+            href = self._cw.data_url(path)
+            self.w(u'<script type="text/javascript" src="{0}"></script>'.format(href))
+        for path in ("triview/css/simple-slider-volume.css",
+                     "triview/css/triview.css"):
+            href = self._cw.data_url(path)
+            self.w(u'<link type="text/css" rel="stylesheet" href="{0}">'.format(href))
 
         # Check inputs
         orientations = ["sagittal", "coronal", "axial"]
@@ -74,7 +85,7 @@ class TriplanarView(View):
                 return
             # > check image sizes
             stack_size = None
-            nb_slices[orient] = len(file_data[orient])
+            nb_slices[orient] = len(file_data[orient]) - 1
             for path in file_data[orient]:
                 with Image.open(path) as open_image:
                     if stack_size is None:
@@ -86,8 +97,6 @@ class TriplanarView(View):
                         self.w(u"disableTriViewBtn();")
                         self.w(u"</script>")
                         return
-        #shape = (nb_slices["sagittal"], nb_slices["coronal"],
-        #         nb_slices["axial"])
 
         # Add an hidden loading image
         html = "<div id='loading-msg' style='display: none;' align='center'>"

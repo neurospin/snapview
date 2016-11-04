@@ -106,3 +106,15 @@ a.fullbtn {
     margin-right: 0.0%;
     width: 100%;
 }
+
+#appliName {
+    display: none;
+}
+
+ul > li {
+    background: none;
+}
+
+.dropdown-menu {
+    width: 500px;
+}

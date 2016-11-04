@@ -29,7 +29,7 @@ Then a 'toy_instance' instance has to be created based on the proposed cube::
 
 It is now possible to add new data in the database for ratings::
 
-    from zeijemol.importer import SnapsImporter
+    from zeijemol.importer import WaveImporter
 
     importer = SnapsImporter("toy_instance", "my_login", "my_password")
     importer.insert("wave 1", "FreeSurfer", "./data/fs/*/surf/rh.white.ctm",

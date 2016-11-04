@@ -105,12 +105,12 @@ class SnapIndexView(IndexView):
             self.w(u'<tbody>')
 
             # Go through all waves
-            for wave_name, snaps in wave_struct.items():
+            for wave_name, snapset in wave_struct.items():
 
                 # Compute the progress score for the logged user
-                nb_of_snaps = len(snaps)
+                nb_of_snapset= len(snapset)
                 nb_rates = 0
-                for entity in snaps:
+                for entity in snapset:
                     scores = [
                         e for e in entity.scores
                         if e.scored_by[0].login == self._cw.session.login]
@@ -119,7 +119,7 @@ class SnapIndexView(IndexView):
                     if len(scores) > 1:
                         raise Exception(
                             "We expect one score per user for one snap.")
-                progress = int(nb_rates / nb_of_snaps * 100)
+                progress = int(nb_rates / nb_of_snapset * 100)
 
                 self.w(u'<tr>')
                 self.w(u'<td>')
