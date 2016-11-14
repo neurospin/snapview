@@ -46,6 +46,44 @@ class Gallery(View):
                                 "W extra_answers E".format(wave_name))
         extra_answers = json.loads(rset[0][0])
 
+        # Add javascript to auto adjust iframe heights for triplanar view
+        js = '$(document).ready(function() {'
+        # auto submit iframe forms
+        js += '$(".triplanar_form").submit();'
+        # keep trace of iframe heights
+        js += 'var lastheights = {};'
+        # each 500 ms, get the iframe height and set corresponding css property
+        js += 'setInterval(function(){'
+        # for each iframe
+        js += '$(".triplanar_iframe").each(function() {'
+        # get iframe id
+        js += 'id = $(this).attr("id");'
+        # if iframe height was not recorded yet, record it
+        js += 'if (!(id in lastheights)) {'
+        js += 'lastheights[id] = $(this).contents().height();'
+        js += '}'
+        # Get the current iframe content height
+        js += 'try {'
+        js += 'current_height = $(this).contents().height();'
+        # if height changed, set css to the new value
+        js += 'if (current_height != lastheights[id]) {'
+        js += '$(this).css("height", current_height);'
+        # record latest height change
+        js += 'lastheights[id] = current_height;'
+        js += "console.log('ho');"
+        # close second if statement
+        js += '}'
+        # close try
+        js += '}'
+        js += 'catch(err) {}'
+        # close each
+        js += '})'
+        # close setInterval
+        js += '}, 500);'
+        # close document
+        js += '});'
+        self.w(u"<script>{0}</script>".format(unicode(js)))
+
         # Select the snapset to be rated: use the internal connection in order
         # to get the full rating distribution and then intersect this
         # distribution with the user rates in order to uniformally
@@ -153,7 +191,7 @@ class Gallery(View):
         if not in_error:
             # > render form
             self.w("\n".join(form_html))
-            for snap_entity in snapset_entity.snaps:
+            for i, snap_entity in enumerate(snapset_entity.snaps):
                 # > get external files
                 filepaths = [e.filepath for e in snap_entity.files]
                 # > display the files
@@ -190,14 +228,26 @@ class Gallery(View):
                         file_data[key] = [
                             elem[1] for elem in sorted(file_data[key],
                                                        key=lambda x: x[0])]
-                    href = self._cw.build_url(
-                        vid="triplanar-view", snap_eid=snap_entity.eid,
-                        file_data=json.dumps(file_data), data_type=data_type)
+                    href = self._cw.build_url(vid="triplanar-view")
                     self.w(u'<div id="gallery-triplanar" class="leftblock">')
-                    self.w(u'<iframe  frameborder="0" scrolling="auto" s'
-                            'tyle="width:100%; height:1000px" '
-                            'src="{0}">'.format(
-                                href))
+                    iframe_name = "iframe_{}".format(i)
+                    # Add form to post png filepaths, snap eid and data type
+                    self.w(u'<form class="triplanar_form" action="{0}" '
+                           u'method="post" target="{1}">'.format(
+                                href, iframe_name))
+                    self.w(u'<input type="hidden" name="file_data" '
+                           u'value=\'{}\' />'.format(json.dumps(file_data)))
+                    self.w(u'<input type="hidden" name="snap_eid" '
+                           u'value="{}" />'.format(snap_entity.eid))
+                    self.w(u'<input type="hidden" name="data_type" '
+                           u'value="{}" />'.format(data_type))
+                    self.w(u'<input type="submit" style="display:none;"/>')
+                    self.w(u'</form>')
+                    # Add iframe to display the triplanar viewer(s)
+                    self.w(u'<iframe name="{0}" id="{0}" '
+                           u'class="triplanar_iframe" frameborder="0" '
+                           u'scrolling="no" style="width:100%" src="#">'.format(
+                                iframe_name))
                     self.w(u'</div>')
                     self.w(u'</iframe>')
                 # > display the surfaces
