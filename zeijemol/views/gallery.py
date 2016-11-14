@@ -70,7 +70,6 @@ class Gallery(View):
         js += '$(this).css("height", current_height);'
         # record latest height change
         js += 'lastheights[id] = current_height;'
-        js += "console.log('ho');"
         # close second if statement
         js += '}'
         # close try
