@@ -88,7 +88,7 @@ class CWWaveBox(HeaderComponent):
                     w(u'<li>')
                     w(u'<div>')
                     w(u'<a href="{0}">{1}</a>'.format(href, wave_name))
-                    w(u'<a class="glyphicon glyphicon-plus toolbar" '
+                    w(u'<a class="glyphicon-plus toolbar" '
                        'href="{0}"></a>'.format(dochref))
                     w(u'</div>')
                     w(u'</li>')
