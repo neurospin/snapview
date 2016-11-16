@@ -122,12 +122,12 @@ class SnapIndexView(IndexView):
                 progress = int(nb_rates / nb_of_snapset * 100)
 
                 self.w(u'<tr>')
-                self.w(u'<td>')
+                self.w(u'<td class="noborder">')
                 self.w(u'<h2>&#9820;{0}</h2>'.format(wave_name))
                 self.w(u'</td>')
                 self.w(u'<tr>')
-                self.w(u'<tr class="danger">')
-                self.w(u'<td>')
+                self.w(u'<tr class="">')
+                self.w(u'<td class="noborder">')
                 self.w(u'<div class="progress">')
                 self.w(u'<div class="progress-bar" role="progressbar" '
                        'aria-valuenow="{0}" aria-valuemin="0" aria-valuemax='
