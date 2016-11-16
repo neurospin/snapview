@@ -9,7 +9,7 @@
 
 STYLESHEETS += [
     data("bootstrap/bootstrap_3_3_6.min.css"),
-    data("cubes.snapview.css")
+    data("cubes.zeijemol.css")
 ]
 
 

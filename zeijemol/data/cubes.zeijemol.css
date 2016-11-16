@@ -118,3 +118,7 @@ ul > li {
 .dropdown-menu {
     width: 500px;
 }
+
+.noborder {
+    border:none !important;
+}
