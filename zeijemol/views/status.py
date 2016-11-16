@@ -99,6 +99,7 @@ class Ratings(View):
             "R score SC, R extra_scores ESC, R scored_by U, U login UN")
         if rset.rowcount == 0:
             self.w(u"<h1>No score in the database yet.</h1>")
+            return
         snapsets_struct = {}
         for wave_name, sid, timestamp, score, extra_score, rater in rset:
             snapsets_struct.setdefault(wave_name, {}).setdefault(
