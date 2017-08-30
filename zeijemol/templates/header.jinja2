@@ -1,0 +1,55 @@
+<!-- a div used to keep the footer at the bottom of the page -->
+<div id="zeijemol-sizer">
+
+<div id="mySidenav" class="sidenav">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    {% for category, waves in left_menu.items() %}
+        <b>Category:</b> {{category}}
+        {% for wave_name, url in waves %}
+            <a href="{{url}}">{{wave_name}}</a>
+        {% endfor %}
+    {% endfor %}
+</div>
+
+<nav id="mainNav" class="navbar navbar-default">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span> Menu <i class="fa fa-bars"></i>
+            </button>
+            <a class="navbar-brand page-scroll" onclick="openNav()" data-toggle="tooltip" title="QC items">
+                <i class="fa fa-2x fa-list text-primary sr-icons"></i>
+            </a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+
+            <ul class="nav navbar-nav navbar-right">
+
+            {% for url, title, ico in right_icons %}
+                <li>
+                    <a class='page-scroll' href='{{url}}' data-toggle='tooltip' title='{{title}}'>
+                        <i class='fa fa-2x {{ico}} text-primary sr-icons'></i>
+                    </a>
+                </li>
+            {% endfor %}
+
+            </ul>
+
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container-fluid -->
+</nav>
+
+<script>
+function openNav() {
+    document.getElementById("mySidenav").style.width = "250px";
+}
+
+function closeNav() {
+    document.getElementById("mySidenav").style.width = "0";
+}
+</script>

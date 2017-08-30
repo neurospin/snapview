@@ -18,14 +18,17 @@ from numpy.random import choice
 from cgi import parse_qs
 from cubicweb.view import View
 import cubes.zeijemol as zeijemol
+from cubicweb.predicates import authenticated_user
 
 
 class Gallery(View):
     """ Custom view to score snap files.
     """
     __regid__ = "gallery-view"
+    title = "Gallery"
     extra_answers_description = u"Justify rating"
     allowed_viewers = ("FILE", "SURF", "TRIPLANAR")
+    __select__ = authenticated_user()
 
     def call(self, **kwargs):
         """ Create the rate form.
@@ -89,9 +92,9 @@ class Gallery(View):
         # fill the database
         # Note: need to access the selected snapset with the user rights
         # because the internal session is closed after with ...:
-        with self._cw.cnx._cnx.repo.internal_cnx() as cnx:
-            rset = cnx.execute("Any S Where W is Wave, W name '{0}', "
-                               "W snapsets S".format(wave_name))
+        with self._cw.session.repo.internal_cnx() as session:
+            rset = session.execute("Any S Where W is Wave, W name '{0}', "
+                                   "W snapsets S".format(wave_name))
             # > find the user ratings and the all user ratings distribution
             nb_scores = []
             nb_user_scores = []
@@ -128,6 +131,7 @@ class Gallery(View):
         snapset_entity = rset.get_entity(0, 0)
 
         # Display title
+        self.w(u'<div class="zeijemol-gallery">')
         self.w(u'<h1>{0}</h1>'.format(title))
 
         # Dispaly status
@@ -264,4 +268,5 @@ class Gallery(View):
                     self.w(u'</div>')
 
             # Clear float
+            self.w(u'</div>')
             self.w(u'<div id="floating-clear"/>')

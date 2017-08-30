@@ -14,31 +14,18 @@ import sys
 import getpass
 import glob
 
+# Cubicweb import
+from cubicweb.utils import admincnx
+
 # Zeijemol import
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 from zeijemol.importer import WaveImporter
 
 
 # Ask for instance & login information
-instance_name = raw_input("\nEnter the instance name [default: snapview]: ")
+instance_name = raw_input("\nEnter the instance name [default: qc]: ")
 if not instance_name:
-    instance_name = "snapview"
-login = raw_input("Enter the '{0}' login [default: admin]: ".format(
-    instance_name))
-if not login:
-    login = "admin"
-password = getpass.getpass("Enter the '{0}' password [default: alpine]: ".format(
-    instance_name))
-if not password:
-    password = "alpine"
-
-
-# Define the importer
-importer = WaveImporter(instance_name, login, password)
-
-# Add some raters
-importer.add_user("u1", "alpine")
-importer.add_user("u2", "alpine")
+    instance_name = "qc"
 
 # Describe some waves
 WAVE1_NAME = "wave_1"
@@ -307,15 +294,23 @@ List of elements
 * elem 2.
 """
 
-# Import new waves
-importer.insert(WAVE1_NAME, WAVE1_CATEGORY, WAVE1_DATA, WAVE1_DESC,
-                WAVE1_SCOREDEFS)
-importer.insert(WAVE2_NAME, WAVE2_CATEGORY, WAVE2_DATA, WAVE2_DESC,
-                WAVE2_SCOREDEFS, WAVE2_EXTRA)
-importer.insert(WAVE3_NAME, WAVE3_CATEGORY, WAVE3_DATA, WAVE3_DESC,
-                WAVE3_SCOREDEFS, WAVE3_EXTRA)
-importer.insert(WAVE4_NAME, WAVE4_CATEGORY, WAVE4_DATA, WAVE4_DESC,
-                WAVE4_SCOREDEFS, WAVE4_EXTRA)
-importer.insert(WAVE5_NAME, WAVE5_CATEGORY, WAVE5_DATA, WAVE5_DESC,
-                WAVE5_SCOREDEFS, WAVE5_EXTRA)
+# Define the importer
+with admincnx(instance_name) as session:
+    importer = WaveImporter(instance_name, session)
+
+    # Add some raters
+    importer.add_user("u1", "alpine")
+    importer.add_user("u2", "alpine")
+
+    # Import new waves
+    importer.insert(WAVE1_NAME, WAVE1_CATEGORY, WAVE1_DATA, WAVE1_DESC,
+                    WAVE1_SCOREDEFS)
+    importer.insert(WAVE2_NAME, WAVE2_CATEGORY, WAVE2_DATA, WAVE2_DESC,
+                    WAVE2_SCOREDEFS, WAVE2_EXTRA)
+    importer.insert(WAVE3_NAME, WAVE3_CATEGORY, WAVE3_DATA, WAVE3_DESC,
+                    WAVE3_SCOREDEFS, WAVE3_EXTRA)
+    importer.insert(WAVE4_NAME, WAVE4_CATEGORY, WAVE4_DATA, WAVE4_DESC,
+                    WAVE4_SCOREDEFS, WAVE4_EXTRA)
+    importer.insert(WAVE5_NAME, WAVE5_CATEGORY, WAVE5_DATA, WAVE5_DESC,
+                    WAVE5_SCOREDEFS, WAVE5_EXTRA)
 

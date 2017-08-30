@@ -8,79 +8,30 @@
 
 # System import
 from __future__ import division
+import os
 import collections
 
 # Cubicweb import
 from cubicweb.web.views.startup import IndexView
 from cubicweb.web.httpcache import NoHTTPCacheManager
 from cubicweb.view import View
+from cubicweb.predicates import authenticated_user
+from cubicweb.predicates import match_user_groups
 
 
-class SnapIndexView(IndexView):
-    """ Class that defines the piws index view.
+class ZEIJEMOLRaterIndexView(IndexView):
+    """ Class that defines the index view.
     """
+    __regid__ = "index"
+    __select__ = authenticated_user() and match_user_groups("managers", "raters")
+    title = _("Index")
     http_cache_manager = NoHTTPCacheManager
 
     def call(self, **kwargs):
-        """ Create the 'index' like page of our site that contain a rating
-        summary for the current user.
+        """ Create the loggedin 'index' page of our site.
         """
-        # Create a pie chart summarizing the global rate status:
-        # only the managers have accessed to this functionality
-        rset = self._cw.execute(
-            "Any X Where X is CWUser, X login '{0}', "
-            "X in_group G, G name 'managers'".format(self._cw.session.login))
-        if rset.rowcount > 0:
-            # Display a title
-            self.w(u'<h1>Rate global summary...</h1>')
-
-            # For each wave: get the number of scores associated to each snap
-            rset = self._cw.execute(
-                "Any S, N Where S is SnapSet, S wave W, W name N")
-            struct = {}
-            for index, row in enumerate(rset):
-                wave_name = row[1]
-                snap_entity = rset.get_entity(index, 0)
-                nb_scores = len(snap_entity.scores)
-                struct.setdefault(wave_name, []).append(nb_scores)
-
-            # Build an histogram like structure with the number of rates
-            # as bins
-            container_id = 0
-            nb_columns = 3
-            self.w(u'<table class="table table-bordered">')
-            self.w(u'<tbody>')
-            for wave_name, scores in struct.items():
-                data = {}
-                nb_elements = sum(scores)
-                if nb_elements == 0:
-                    data["0"] = 100
-                else:
-                    counter = collections.Counter(scores)
-                    for nb_scores, frequency in counter.items():
-                        title = "{0}".format(nb_scores)
-                        data[title] = frequency / nb_elements * 100
-
-                # Call PieChart for html generation of the summary
-                if container_id % nb_columns == 0:
-                    self.w(u'<tr>')
-                self.w(u'<td class="col-md-3">')
-                self.wview("pie-highcharts", None, "null", data=data,
-                           title="Number of rates: {0}".format(wave_name),
-                           container_id=container_id)
-                self.w(u'</td>')
-                if container_id % nb_columns == nb_columns - 1:
-                    self.w(u'</tr>')
-                container_id += 1
-
-            # Close properly the table
-            if (container_id - 1) % nb_columns != nb_columns - 1:
-                self.w(u'</tr>')
-            self.w(u'</tr>')
-            self.w(u'</tbody>')
-            self.w(u'</table>')
-
-        # Build summary in memory ordered by category and wave name
+        # Get information to display a summary table with one progress bar
+        # for each wave
         rset = self._cw.execute(
             "Any S, W, N, C Where S is SnapSet, S wave W, W name N, "
             "W category C")
@@ -90,24 +41,9 @@ class SnapIndexView(IndexView):
             category = row[3]
             struct.setdefault(category, {}).setdefault(wave_name, []).append(
                 rset.get_entity(index, 0))
-
-        # Display the summary table: one progress bar for each wave
-        self.w(u'<h1>Progress...</h1>')
-        self.w(u'<table class="table">')
+        waves_progress = {}
         for category, wave_struct in struct.items():
-            self.w(u'<thead>')
-            self.w(u'<tr>')
-            self.w(u'<th>')
-            self.w(u'<h2>Category: {0}</h2>'.format(category))
-            self.w(u'</th>')
-            self.w(u'<tr>')
-            self.w(u'</thead>')
-            self.w(u'<tbody>')
-
-            # Go through all waves
             for wave_name, snapset in wave_struct.items():
-
-                # Compute the progress score for the logged user
                 nb_of_snapset= len(snapset)
                 nb_rates = 0
                 for entity in snapset:
@@ -116,29 +52,58 @@ class SnapIndexView(IndexView):
                         if e.scored_by[0].login == self._cw.session.login]
                     if len(scores) == 1:
                         nb_rates += 1
-                    if len(scores) > 1:
+                    elif len(scores) > 1:
                         raise Exception(
                             "We expect one score per user for one snap.")
-                progress = int(nb_rates / nb_of_snapset * 100)
+                waves_progress.setdefault(category, []).append(
+                    (wave_name, int(nb_rates / nb_of_snapset * 100)))
 
-                self.w(u'<tr>')
-                self.w(u'<td class="noborder">')
-                self.w(u'<h2>&#9820;{0}</h2>'.format(wave_name))
-                self.w(u'</td>')
-                self.w(u'<tr>')
-                self.w(u'<tr class="">')
-                self.w(u'<td class="noborder">')
-                self.w(u'<div class="progress">')
-                self.w(u'<div class="progress-bar" role="progressbar" '
-                       'aria-valuenow="{0}" aria-valuemin="0" aria-valuemax='
-                       '"100" style="width:{0}%">'.format(progress))
-                self.w(u'{0}%'.format(progress))
-                self.w(u'</div>')
-                self.w(u"</div>")
-                self.w(u'</td>')
-                self.w(u'</tr>')
-            self.w(u'</tbody>')
-        self.w(u'</table>')
+        # Format template
+        template = self._cw.vreg.template_env.get_template("startup.logged.jinja2")
+        html = template.render(
+            header_url=self._cw.data_url("creative/img/neurospin.jpg"),
+            waves_progress=waves_progress)
+        self.w(html)
+
+
+class ZEIJEMOLIndexView(IndexView):
+    """ Class that defines the index view.
+    """
+    __regid__ = "index"
+    __select__ = ~authenticated_user() or ~match_user_groups("moderators")
+    title = _("Index")
+    templatable = False
+    default_message = "Unable to locate the startup page."
+
+    def call(self, **kwargs):
+        """ Create the anonymous 'index' page of our site.
+        """
+        # Get additional resources links
+        css = []
+        for path in ("creative/vendor/bootstrap/css/bootstrap.min.css",
+                     "creative/vendor/font-awesome/css/font-awesome.min.css",
+                     "creative/vendor/magnific-popup/magnific-popup.css",
+                     "creative/css/creative.css"):
+            css.append(self._cw.data_url(path))
+        js = []
+        for path in ("creative/vendor/jquery/jquery.min.js",
+                     "creative/vendor/bootstrap/js/bootstrap.min.js",
+                     "creative/vendor/scrollreveal/scrollreveal.min.js",
+                     "creative/vendor/magnific-popup/jquery.magnific-popup.min.js",
+                     "creative/js/creative.js"):
+            js.append(self._cw.data_url(path))
+
+        # Format template
+        template = self._cw.vreg.template_env.get_template("startup.jinja2")
+        html = template.render(
+            header_url=self._cw.data_url("creative/img/neurospin.jpg"),
+            login_url=self._cw.build_url(
+                "login", __message=u"Please login with your account."),
+            contact_email=self._cw.vreg.config.get(
+                "administrator-emails", "noreply@cea.fr"),
+            css_url=css,
+            js_url=js)
+        self.w(html)
 
 
 class PieChart(View):
@@ -209,5 +174,7 @@ class PieChart(View):
 
 
 def registration_callback(vreg):
-    vreg.register_and_replace(SnapIndexView, IndexView)
+    #vreg.register_and_replace(SnapIndexView, IndexView)
+    vreg.register_and_replace(ZEIJEMOLIndexView, IndexView)
+    vreg.register(ZEIJEMOLRaterIndexView)
     vreg.register(PieChart)

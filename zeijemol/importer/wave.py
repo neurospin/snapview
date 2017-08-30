@@ -17,7 +17,6 @@ import re
 
 # Cubicweb import
 from cubicweb import cwconfig
-from cubicweb.dbapi import in_memory_repo_cnx
 from cubicweb import Binary
 from cubicweb.server.utils import crypt_password
 
@@ -28,23 +27,17 @@ from zeijemol.docgen.rst2html import rst2html
 class WaveImporter(object):
     """ This class enables us to add/update new wave in a CW instance.
     """
-    def __init__(self, instance_name, login, password):
+    def __init__(self, instance_name, session):
         """ Initialize the WaveImporter class.
 
         Parameters
         ----------
         instance_name: str (mandatory)
             the name of the cubicweb instance based in the 'snapview' cube.
-        login: str (mandatory)
-            a login.
-        password: str (mandatory)
-            the corresponding password.
+        session: CubicWeb session
+            the session used to insert the data.
         """
-        # Create a cw session
-        config = cwconfig.instance_configuration(instance_name)
-        self.repo, self.cnx = in_memory_repo_cnx(
-            config, login=login, password=password)
-        self.session = self.repo._get_session(self.cnx.sessionid)
+        self.session = session
 
     ###########################################################################
     #   Public Methods

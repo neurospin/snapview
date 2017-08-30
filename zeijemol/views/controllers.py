@@ -13,12 +13,14 @@ import json
 # Cubicweb import
 from cubicweb.web import Redirect
 from cubicweb.web.controller import Controller
+from cubicweb.predicates import authenticated_user
 
 
 class RateController(Controller):
     """ Create a score entity from input form data.
     """
     __regid__ = "rate-controller"
+    __select__ = authenticated_user()
 
     def publish(self, rset=None):
         """ Deal with the form.
@@ -57,8 +59,17 @@ class RateController(Controller):
                              "'{1}'".format(self._cw.form["eid"], score_eid))
 
         # Construct redirection URL
+        dochref = self._cw.build_url(
+            "view", vid="zeijemol-documentation",
+            wave_eid=self._cw.form["eid"])
+        title = ("Please help us rating data in '{0}' "
+                 "wave ".format(self._cw.form["wave_name"]))
+        title += ("<a href='{0}' target='_blank' data-toggle='tooltip' "
+                  "title='Show info'>".format(dochref))
+        title += "<i class='fa fa-info-circle text-primary sr-icons'></i>"
+        title += "</a>"
         href = self._cw.build_url(
             "view", vid="gallery-view", wave=self._cw.form["wave_name"],
-            title=self._cw._("Please rate this item..."))
+            title=self._cw._(title))
 
         raise Redirect(href)

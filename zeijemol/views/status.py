@@ -16,6 +16,8 @@ import csv
 
 # CW import
 from cubicweb.view import View
+from cubicweb.predicates import match_user_groups
+from cubicweb.predicates import authenticated_user
 
 
 class Status(View):
@@ -25,11 +27,14 @@ class Status(View):
     of people rates.
     """
     __regid__ = "status-view"
+    title = "Status"
+    __select__ = authenticated_user()
 
     def call(self, **kwargs):
         """ Create the status table.
         """
         # Get all the rated snaps ordered by wave name and by raters
+        self.w(u"<div class='zeijemol-status'>")
         rset = self._cw.execute(
             "Any WN, SC, UN Where W is Wave, W name WN, W snapsets S, "
             "S scores R, R score SC, R scored_by U, "
@@ -79,6 +84,7 @@ class Status(View):
                        records=records, csv_export=True, index=index,
                        elts_to_sort=["UID"],
                        title="{0} status".format(wave_name))
+            self.w(u"</div>")
 
 
 class Ratings(View):
@@ -88,11 +94,14 @@ class Ratings(View):
     rates.
     """
     __regid__ = "ratings-view"
+    title = "Admin status"
+    __select__ = authenticated_user() & match_user_groups("managers")
 
     def call(self, **kwargs):
         """ Create the rates table.
         """
         # Get all the rated snaps ordered by wave name and by raters
+        self.w(u"<div class='zeijemol-status'>")
         rset = self._cw.execute(
             "Any WN, SN, D, SC, ESC, UN Where W is Wave, W name WN, "
             "W snapsets S, S name SN, S scores R, R creation_date D, "
@@ -134,14 +143,17 @@ class Ratings(View):
                    records=records, csv_export=True, index=index,
                    elts_to_sort=["UID"],
                    title="Ratings".format(wave_name))
+        self.w(u"</div>")
 
 
 class JTableView(View):
     """ Create a table view with DataTables.
     """
     __regid__ = "jtable-clientside"
+    title = "Table"
     paginable = False
     div_id = "jtable-clientside"
+    __select__ = authenticated_user()
 
     def call(self, labels, records, title, csv_export=True,
              elts_to_sort=None, index=0,

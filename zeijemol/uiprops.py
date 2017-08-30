@@ -8,7 +8,8 @@
 
 
 STYLESHEETS += [
-    data("bootstrap/bootstrap_3_3_6.min.css"),
+    data("creative/vendor/bootstrap/css/bootstrap.min.css"),
+    data("creative/vendor/font-awesome/css/font-awesome.min.css"),
     data("cubes.zeijemol.css")
 ]
 
@@ -18,6 +19,6 @@ STYLESHEETS_PRINT += [
 
 
 JAVASCRIPTS += [
-    "https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js",
-    data("bootstrap/bootstrap_3_3_6.min.js")
+    data("creative/vendor/bootstrap/js/bootstrap.min.js"),
 ]
+
