@@ -68,20 +68,6 @@ class ZEIJEMOLPageHeader(HTMLPageHeader):
     def main_header(self, view):
         """ build the top menu with authentification info and the rql box.
         """
-        required_css = [
-            "https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css",
-            "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css",
-            "https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css",
-            "https://daneden.github.io/animate.css/animate.min.css"]
-        required_js = [
-            'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js',
-            'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js']
-        for item in required_css:
-            self._cw.add_css(item, localfile=False)
-        for item in required_js:
-            self._cw.add_js(item, localfile=False)
-        self._cw.add_css("zeijemol.navbar.css")
-        self._cw.add_css("cubes.zeijemol.css")
         # Get additional information
         components = self._cw.vreg["ctxcomponents"].poss_visible_objects(
             self._cw, rset=self.cw_rset, view=view, context="header-menu-left")

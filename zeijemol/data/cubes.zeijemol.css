@@ -108,16 +108,24 @@ table#mainLayout td#contentColumn {
     padding-left: 5%;
     padding-right: 3%;
     padding-bottom: 20px;
-    margin-top: 50px;
-    padding-top: 20px;
+    margin-top: 0;
+    padding-top: 50px;
 }
 
 .zeijemol-status {
     padding-left: 5%;
     padding-right: 3%;
     padding-bottom: 20px;
-    margin-top: 50px;
-    padding-top: 20px;
+    margin-top: 0;
+    padding-top: 50px;
+}
+
+#some-doc-about-this-wave {
+    padding-left: 5%;
+    padding-right: 3%;
+    padding-bottom: 20px;
+    margin-top: 0;
+    padding-top: 50px;
 }
 
 .navbar {
