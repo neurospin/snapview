@@ -9,16 +9,44 @@
 # Cubicweb import
 from cubicweb.web.views.basetemplates import HTMLPageFooter
 from cubicweb.web.views.basetemplates import HTMLPageHeader
+from cubicweb.web.views.basetemplates import TheMainTemplate
 from cubicweb.web.views.wdoc import HelpAction
 from cubicweb.web.views.wdoc import AboutAction
 from cubicweb.web.views.actions import PoweredByAction
 from cubicweb.web.views.basecomponents import ApplLogo
-from logilab.common.registry import yes
 
 
 ###############################################################################
 # ACTIONS
 ###############################################################################
+class ZeijemolMainTemplate(TheMainTemplate):
+
+    def template_body_header(self, view):
+        w = self.w
+        w(u'<body>\n')
+        w(u'<div id="wrapper">')
+        w(u'<div class="overlay"></div>')
+        self.wview('header', rset=self.cw_rset, view=view)
+        w(u'<div id="page-content-wrapper">')
+        w(u'<button type="button" class="hamburger is-closed animated '
+            'fadeInLeft" data-toggle="offcanvas">')
+        w(u'<span class="hamb-top"></span>')
+        w(u'<span class="hamb-middle"></span>')
+        w(u'<span class="hamb-bottom"></span>')
+        w(u'</button>')
+        w(u'<div id="page"><table width="100%" border="0" id="mainLayout"><tr>\n')
+        self.nav_column(view, 'left')
+        w(u'<td id="contentColumn">\n')
+        components = self._cw.vreg['components']
+        rqlcomp = components.select_or_none('rqlinput', self._cw, rset=self.cw_rset)
+        if rqlcomp:
+            rqlcomp.render(w=self.w, view=view)
+        msgcomp = components.select_or_none('applmessages', self._cw, rset=self.cw_rset)
+        if msgcomp:
+            msgcomp.render(w=self.w)
+        self.content_header(view)
+        w(u'</div>')
+        w(u'</div>')
 
 
 class ZEIJEMOLPageFooter(HTMLPageFooter):
@@ -40,11 +68,25 @@ class ZEIJEMOLPageHeader(HTMLPageHeader):
     def main_header(self, view):
         """ build the top menu with authentification info and the rql box.
         """
+        required_css = [
+            "https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css",
+            "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css",
+            "https://designmodo.github.io/Flat-UI/dist/css/flat-ui.min.css",
+            "https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css",
+            "https://daneden.github.io/animate.css/animate.min.css"]
+        required_js = [
+            'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js',
+            'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js']
+        for item in required_css:
+            self._cw.add_css(item, localfile=False)
+        for item in required_js:
+            self._cw.add_js(item, localfile=False)
+        self._cw.add_css("navbar_left.css")
         # Get additional information
         components = self._cw.vreg["ctxcomponents"].poss_visible_objects(
             self._cw, rset=self.cw_rset, view=view, context="header-menu-left")
         assert len(components) == 1
-        left_menu = components[0].attributes()
+        dropdown_items = components[0].attributes()
 
         icons = []
         for colid, context in self.headers:
@@ -57,8 +99,11 @@ class ZEIJEMOLPageHeader(HTMLPageHeader):
         # Format template
         template = self._cw.vreg.template_env.get_template("header.jinja2")
         html = template.render(
-            left_menu=left_menu,
-            right_icons=icons)
+            anonymous_session=self._cw.session.anonymous_session,
+            dropdown_items=dropdown_items,
+            icons=icons,
+            home_url=self._cw.base_url(),
+            logout_url=self._cw.build_url("login"))
         self.w(html)
 
 
@@ -71,3 +116,4 @@ def registration_callback(vreg):
     vreg.unregister(AboutAction)
     vreg.unregister(PoweredByAction)
     vreg.unregister(ApplLogo)
+    vreg.register_and_replace(ZeijemolMainTemplate, TheMainTemplate)
