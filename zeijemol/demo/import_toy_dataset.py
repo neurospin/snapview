@@ -113,7 +113,7 @@ WAVE3_SCOREDEFS = ["ACCEPT", "PRESCRIBE MANUAL EDIT", "REJECT"]
 TRIPLANAR_PATTERN = "./data/{0}/t1/triplanar/snapshot-wm-{1}-{2}.png"
 WAVE3_DATA = {
     "001": {
-        "triplanar": {
+        "TRIPLANAR-STACK": {
             "filepaths": [
                 ("coronal", [TRIPLANAR_PATTERN.format("001", "C", index) for
                              index in range(0, 256, 2)]),
@@ -121,7 +121,7 @@ WAVE3_DATA = {
                            index in range(0, 256, 2)]),
                 ("sagittal", [TRIPLANAR_PATTERN.format("001", "S", index) for
                               index in range(0, 256, 2)])],
-            "viewer": "TRIPLANAR"
+            "viewer": "TRIPLANAR-STACK"
         },
         "surf": {
             "filepaths": [
@@ -138,7 +138,7 @@ WAVE3_DATA = {
         }
     },
     "002": {
-        "triplanar": {
+        "TRIPLANAR-STACK": {
             "filepaths": [
                 ("coronal", [TRIPLANAR_PATTERN.format("002", "C", index) for
                              index in range(0, 256, 2)]),
@@ -146,7 +146,7 @@ WAVE3_DATA = {
                            index in range(0, 256, 2)]),
                 ("sagittal", [TRIPLANAR_PATTERN.format("002", "S", index) for
                               index in range(0, 256, 2)])],
-            "viewer": "TRIPLANAR"
+            "viewer": "TRIPLANAR-STACK"
         },
         "surf": {
             "filepaths": [
@@ -163,7 +163,7 @@ WAVE3_DATA = {
         }
     },
     "003": {
-        "triplanar": {
+        "TRIPLANAR-STACK": {
             "filepaths": [
                 ("coronal", [TRIPLANAR_PATTERN.format("003", "C", index) for
                              index in range(0, 256, 2)]),
@@ -171,7 +171,7 @@ WAVE3_DATA = {
                            index in range(0, 256, 2)]),
                 ("sagittal", [TRIPLANAR_PATTERN.format("003", "S", index) for
                               index in range(0, 256, 2)])],
-            "viewer": "TRIPLANAR"
+            "viewer": "TRIPLANAR-STACK"
         },
         "surf": {
             "filepaths": [
@@ -268,7 +268,7 @@ WAVE5_DATA = {
             "filepaths": [
                 ("axial", [TRIPLANAR_PATTERN.format("001", "A", index) for
                            index in range(0, 256, 2)])],
-            "viewer": "TRIPLANAR"
+            "viewer": "TRIPLANAR-STACK"
         }
     },
     "002": {
@@ -278,7 +278,7 @@ WAVE5_DATA = {
                            index in range(0, 256, 2)]),
                 ("coronal", [TRIPLANAR_PATTERN.format("002", "C", index) for
                              index in range(0, 256, 2)])],
-            "viewer": "TRIPLANAR"
+            "viewer": "TRIPLANAR-STACK"
         }
     }
 }
@@ -292,6 +292,31 @@ List of elements
 
 * elem1.
 * elem 2.
+"""
+WAVE6_NAME = "wave_6"
+WAVE6_CATEGORY = "T1"
+WAVE6_SCOREDEFS = ["ACCEPT", "PRESCRIBE MANUAL EDIT", "REJECT"]
+WAVE6_DATA = {
+    "001": {
+        "t1": {
+            "filepaths": [
+                "./data/001/avg152T1.nii.gz",
+                "./data/001/avg152T2.nii.gz"],
+            "viewer": "TRIPLANAR-IMAGE"
+        }
+    },
+    "002": {
+        "t1": {
+            "filepaths": [
+                "./data/002/avg152T1.nii.gz"],
+            "viewer": "TRIPLANAR-IMAGE"
+        }
+    }
+}
+WAVE6_EXTRA = ["artefacts", "motions"]
+WAVE6_DESC = {}
+WAVE6_DESC["description"] = """
+Some doc about this wave.
 """
 
 # Define the importer
@@ -313,4 +338,6 @@ with admincnx(instance_name) as session:
                     WAVE4_SCOREDEFS, WAVE4_EXTRA)
     importer.insert(WAVE5_NAME, WAVE5_CATEGORY, WAVE5_DATA, WAVE5_DESC,
                     WAVE5_SCOREDEFS, WAVE5_EXTRA)
+    importer.insert(WAVE6_NAME, WAVE6_CATEGORY, WAVE6_DATA, WAVE6_DESC,
+                    WAVE6_SCOREDEFS, WAVE6_EXTRA)
 

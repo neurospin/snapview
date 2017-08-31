@@ -217,6 +217,8 @@ class WaveImporter(object):
             the file description.
         """
         ext = fpath.split(".")[-1].upper()
+        if ext == "GZ":
+            ext = fpath.split(".")[-2].upper() + ext
         with open(fpath, "rb") as open_file:
             sha1hex = self._md5_sum(open_file.read(), algo="sha1")
         file_struct = {

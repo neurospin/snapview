@@ -8,10 +8,11 @@
 
 # System import
 from __future__ import division
-import base64
-import json
 import os
+import json
 import numpy
+import base64
+import logging
 from numpy.random import choice
 
 # CW import
@@ -27,7 +28,7 @@ class Gallery(View):
     __regid__ = "gallery-view"
     title = "Gallery"
     extra_answers_description = u"Justify rating"
-    allowed_viewers = ("FILE", "SURF", "TRIPLANAR")
+    allowed_viewers = ("FILE", "SURF", "TRIPLANAR-STACK", "TRIPLANAR-IMAGE")
     __select__ = authenticated_user()
 
     def call(self, **kwargs):
@@ -187,7 +188,10 @@ class Gallery(View):
                          "on '{2}'.".format(wave_entity.name,
                                             snap_entity.viewer,
                                             self._cw.base_url()))
-                self.w(u"<h1>{0}</h1>".format(error))
+                logger = logging.getLogger("zeijemol.gallery")
+                logger.error(error)
+                self.w(u"<div class='alert alert-danger'><h2>{0}</h2>"
+                        "</div>".format(error))
                 in_error = True
 
         # Display all the declared snaps for this snapset
@@ -218,8 +222,9 @@ class Gallery(View):
                              'src="data:image/{0};base64, {1}" />'.format(
                                    dtype.lower(), encoded_string))
                     self.w(u'</div>')
-                # > display the files in a triplanar view
-                elif snap_entity.viewer == "TRIPLANAR":
+                # > display the files containing stack of images in a triplanar
+                # view
+                elif snap_entity.viewer == "TRIPLANAR-STACK":
                     file_data = {}
                     for e in snap_entity.files:
                         file_data.setdefault(e.description, []).append(
@@ -231,7 +236,7 @@ class Gallery(View):
                         file_data[key] = [
                             elem[1] for elem in sorted(file_data[key],
                                                        key=lambda x: x[0])]
-                    href = self._cw.build_url(vid="triplanar-view")
+                    href = self._cw.build_url(vid="triplanar-stack-viewer")
                     self.w(u'<div id="gallery-triplanar" class="leftblock">')
                     iframe_name = "iframe_{}".format(i)
                     # Add form to post png filepaths, snap eid and data type
@@ -253,6 +258,31 @@ class Gallery(View):
                                 iframe_name))
                     self.w(u'</div>')
                     self.w(u'</iframe>')
+                # > display the files in a triplanar view
+                elif snap_entity.viewer == "TRIPLANAR-IMAGE":
+                    # Define iframe parameters
+                    iframe_name = "iframe_{}".format(i)
+                    href = self._cw.build_url(
+                        "view", vid="triplanar-image-viewer",
+                        imagefiles=filepaths,
+                        __message=(
+                            u"Found '{0}' image(s) that must be checked.".format(
+                                len(filepaths))))
+                    # Add form to post data
+                    self.w(u'<form class="triplanar_form" action="{0}" '
+                           u'method="post" target="{1}">'.format(
+                                href, iframe_name))
+                    self.w(u'<input type="submit" style="display:none;"/>')
+                    self.w(u'</form>')
+                    # Add iframe to display the triplanar viewer(s)
+                    self.w(u'<div id="gallery-triplanar" class="leftblock">')
+                    self.w(u'<iframe name="{0}" id="{0}" '
+                           u'class="triplanar_iframe" frameborder="0" '
+                           u'scrolling="no" style="width:100%" src="#">'.format(
+                                iframe_name))
+                    self.w(u'</div>')
+                    self.w(u'</iframe>')
+                    print href
                 # > display the surfaces
                 elif snap_entity.viewer == "SURF":
                     self.w(u'<div id="gallery-img">')

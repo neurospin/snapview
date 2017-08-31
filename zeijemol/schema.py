@@ -127,7 +127,7 @@ class Snap(EntityType):
     name: String (mandatory)
         a short description of the file.
     viewer: String (mandatory)
-        the viewer type: 'TRIPLANAR', 'SURF' or 'FILE'.
+        the viewer type: 'TRIPLANAR-STACK', 'TRIPLANAR-IMAGE', 'SURF' or 'FILE'.
 
     Relations
     ---------
@@ -148,9 +148,9 @@ class Snap(EntityType):
         description=u"a short description for the viewer.")
     viewer = String(
         required=True,
-        vocabulary=("TRIPLANAR", "SURF", "FILE"),
-        description=(u"the viewer type: 'TRIPLANAR', 'SURF' or 'FILE' "
-                      "are supported."))
+        vocabulary=("TRIPLANAR-STACK", "TRIPLANAR-IMAGE", "SURF", "FILE"),
+        description=(u"the viewer type: 'TRIPLANAR-STACK', 'TRIPLANAR-IMAGE', "
+                      "'SURF' or 'FILE' are supported."))
     snapset = SubjectRelation(
         "SnapSet",
         cardinality="1*",
@@ -179,8 +179,8 @@ class ExternalFile(EntityType):
     sha1hex: String (optional)
         the SHA1 sum of the file.
     dtype: String (mandatory)
-        the file type: only 'PDF', 'CTM', 'STATS', 'PNG', 'JPG' or 'JPEG'
-        are supported.
+        the file type: only 'PDF', 'CTM', 'STATS', 'PNG', 'JPG', 'JPEG' or
+        'NIIGZ' are supported.
 
     Relations
     ---------
@@ -205,9 +205,9 @@ class ExternalFile(EntityType):
         description=u"the SHA1 sum of the file.")
     dtype = String(
         required=True,
-        vocabulary=("CTM", "STATS", "PNG", "JPEG", "JPG", "PDF"),
-        description=(u"the file type: 'PDF', 'CTM', 'STATS', 'PNG', 'JPG' or "
-                      "'JPEG' are supported."))
+        vocabulary=("CTM", "STATS", "PNG", "JPEG", "JPG", "PDF", "NIIGZ"),
+        description=(u"the file type: 'PDF', 'CTM', 'STATS', 'PNG', 'JPG', "
+                      "'JPEG' or 'NIIGZ' are supported."))
     snap = SubjectRelation(
         "Snap",
         cardinality="+*",
