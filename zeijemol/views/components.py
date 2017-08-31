@@ -7,11 +7,8 @@
 ##########################################################################
 
 # CW import
-from logilab.common.registry import yes
-from cubicweb.predicates import anonymous_user
 from cubicweb.predicates import match_user_groups
 from cubicweb.predicates import authenticated_user
-from cubicweb.web import component
 from cubicweb.web.views.boxes import SearchBox
 from cubicweb.web.views.bookmark import BookmarksBox
 from cubicweb.web.views.basecomponents import HeaderComponent
@@ -55,7 +52,6 @@ class SubNavBar(HeaderComponent):
                 snapsets_rset = self._cw.execute(
                     "Any COUNT(S) Where W is Wave, W name '{0}', "
                     "W snapsets S".format(wave_name))
-                display_wave_button = True
                 if len(wave_rset) != snapsets_rset[0][0]:
                     wave_to_display.append(wave_entity)
 
@@ -81,7 +77,7 @@ class SubNavBar(HeaderComponent):
                         title=self._cw._(title))
                     left_menu.setdefault(category, []).append([wave_name, href])
 
-        return left_menu 
+        return left_menu
 
 
 class HomeButton(HeaderComponent):
@@ -105,8 +101,8 @@ class StatusButton(HeaderComponent):
     context = u"header-right"
 
     def attributes(self):
-        return (self._cw.build_url("view", vid="status-view"), "Show status",
-                "fa-pie-chart")
+        return (self._cw.build_url("view", vid="status-view"), "Progress",
+                "fa-line-chart")
 
 
 class RatingsButton(HeaderComponent):
@@ -121,7 +117,7 @@ class RatingsButton(HeaderComponent):
 
     def attributes(self):
         return (self._cw.build_url("view", vid="ratings-view"), "Show ratings",
-                "fa-tachometer")
+                "fa-trophy")
 
 
 class LogOutButton(AuthenticatedUserStatus):
@@ -132,7 +128,7 @@ class LogOutButton(AuthenticatedUserStatus):
     order = 3
 
     def attributes(self):
-        return (self._cw.build_url("logout"), "Signout", "fa-sign-out")
+        return (self._cw.build_url("logout"), "Sign-out", "fa-sign-out")
 
 
 @monkeypatch(LogoutController)
