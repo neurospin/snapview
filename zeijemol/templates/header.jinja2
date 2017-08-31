@@ -2,8 +2,8 @@
 <nav class="navbar navbar-inverse navbar-fixed-top" id="sidebar-wrapper" role="navigation">
   <ul class="nav sidebar-nav">
     <li class="sidebar-brand">
-      <a href="#">
-       QC menu
+      <a href="#" class="noaction">
+       MENU
       </a>
     </li>
     {% if anonymous_session %}
@@ -16,12 +16,12 @@
     {% else %}
       <li class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-          <i class="fa fa-fw fa-plus"></i> Rate now
+          <i class="fa fa-fw fa-list"></i> Rate now
           <span class="caret"></span>
         </a>
         <ul class="dropdown-menu" role="menu">
           {% for category, waves in dropdown_items.items() %}
-            <li class="dropdown-header">
+            <li class="dropdown-header noaction">
               <font color="red">{{category}}</font>
             </li>
             {% for wave_name, url in waves %}

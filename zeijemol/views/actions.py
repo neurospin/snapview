@@ -71,7 +71,6 @@ class ZEIJEMOLPageHeader(HTMLPageHeader):
         required_css = [
             "https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css",
             "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css",
-            "https://designmodo.github.io/Flat-UI/dist/css/flat-ui.min.css",
             "https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css",
             "https://daneden.github.io/animate.css/animate.min.css"]
         required_js = [
@@ -81,7 +80,8 @@ class ZEIJEMOLPageHeader(HTMLPageHeader):
             self._cw.add_css(item, localfile=False)
         for item in required_js:
             self._cw.add_js(item, localfile=False)
-        self._cw.add_css("navbar_left.css")
+        self._cw.add_css("zeijemol.navbar.css")
+        self._cw.add_css("cubes.zeijemol.css")
         # Get additional information
         components = self._cw.vreg["ctxcomponents"].poss_visible_objects(
             self._cw, rset=self.cw_rset, view=view, context="header-menu-left")
