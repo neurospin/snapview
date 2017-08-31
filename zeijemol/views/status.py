@@ -84,7 +84,7 @@ class Status(View):
                        records=records, csv_export=True, index=index,
                        elts_to_sort=["UID"],
                        title="{0} status".format(wave_name))
-            self.w(u"</div>")
+        self.w(u"</div>")
 
 
 class Ratings(View):
