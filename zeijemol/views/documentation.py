@@ -19,7 +19,6 @@ class DisplayDocumentation(NullView):
     """
     __regid__ = "zeijemol-documentation"
     templatable = True
-    div_id = "zeijemol-documentation"
 
     def call(self, wave_eid=None, **kwargs):
         """ Create the documentation page.
@@ -36,6 +35,7 @@ class DisplayDocumentation(NullView):
         wave_entity = wave_rset.get_entity(0, 0)
 
         # Display page content
+        self.w(u"<div class='zeijemol-documentation'>")
         self.w(wave_entity.description)
         if wave_entity.filepath is not None:
             with open(wave_entity.filepath, "rb") as image_file:
@@ -46,4 +46,5 @@ class DisplayDocumentation(NullView):
                  'src="data:application/pdf;base64, '
                  '{0}" />'.format(encoded_string))
             self.w(u'</div>')
+        self.w(u"</div>")
 

@@ -120,7 +120,15 @@ table#mainLayout td#contentColumn {
     padding-top: 50px;
 }
 
-#some-doc-about-this-wave {
+.zeijemol-documentation {
+    padding-left: 5%;
+    padding-right: 3%;
+    padding-bottom: 20px;
+    margin-top: 0;
+    padding-top: 50px;
+}
+
+.error_traceback {
     padding-left: 5%;
     padding-right: 3%;
     padding-bottom: 20px;

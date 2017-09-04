@@ -12,6 +12,7 @@ import os
 import collections
 
 # Cubicweb import
+from cubicweb import _
 from cubicweb.web.views.startup import IndexView
 from cubicweb.web.httpcache import NoHTTPCacheManager
 from cubicweb.view import View

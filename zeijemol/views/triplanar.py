@@ -16,6 +16,7 @@ import numpy
 from PIL import Image
 
 # CW import
+from cubicweb import _
 from cubicweb.view import View
 from cubicweb.web.views.ajaxcontroller import ajaxfunc
 from cubicweb.predicates import authenticated_user
@@ -914,7 +915,7 @@ def get_encoded_brainbrowser_image(self):
 
     # Load the image
     im = nibabel.load(imagefile)
-    header = im.get_header()
+    header = im.header
     data = im.get_data()
 
     # Change the dynamic of the image intensities
@@ -1019,7 +1020,7 @@ def get_brainbrowser_image(self):
 
     # Load the image
     im = nibabel.load(imagefile)
-    header = im.get_header()
+    header = im.header
     try:
         data = im.get_data()
     # Missing bytes intern specific error that can be overcome with

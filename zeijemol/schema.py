@@ -146,6 +146,9 @@ class Snap(EntityType):
         fulltextindexed=True,
         maxsize=256,
         description=u"a short description for the viewer.")
+    order = Int(
+        required=True,
+        description=u"the display oder.")        
     viewer = String(
         required=True,
         vocabulary=("TRIPLANAR-STACK", "TRIPLANAR-IMAGE", "SURF", "FILE"),

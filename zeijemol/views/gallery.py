@@ -111,7 +111,8 @@ class Gallery(View):
             # > check that the user has something to rate
             if nb_user_scores.min() == 1:
                 error = "No more snap to rate, thanks."
-                self.w(u"<h1>{0}</h1>".format(error))
+                self.w(u"<div id='some-doc-about-this-wave'><h1>{0}</h1>"
+                        "</div>".format(error))
                 return
             # > compute a sampling distribution
             # p(snapset|len(snapset_scores)=X) = 1/(X + 1) (before norm)
@@ -198,7 +199,8 @@ class Gallery(View):
         if not in_error:
             # > render form
             self.w("\n".join(form_html))
-            for i, snap_entity in enumerate(snapset_entity.snaps):
+            ordered_snaps = sorted(snapset_entity.snaps, key=lambda e: e.order)
+            for i, snap_entity in enumerate(ordered_snaps):
                 # > get external files
                 filepaths = [e.filepath for e in snap_entity.files]
                 # > display the files

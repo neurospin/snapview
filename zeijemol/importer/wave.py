@@ -21,7 +21,7 @@ from cubicweb import Binary
 from cubicweb.server.utils import crypt_password
 
 # SnapView import
-from zeijemol.docgen.rst2html import rst2html
+from cubes.zeijemol.docgen.rst2html import rst2html
 
 
 class WaveImporter(object):
@@ -153,7 +153,8 @@ class WaveImporter(object):
         sid: str (mandatory)
             the subject identifier.
         snap_data: dict (mandatory)
-            a dictionary structure of the form:
+            a dictionary structure (we recommand to use an ordered dict) of
+            the form:
             {<snap_names>: {filepaths: <filepaths_struct>,
                             viewer: <viewer_name>}}
             where <filepaths_struct> is a list of paths ('[<paths>]') or a list
@@ -161,12 +162,15 @@ class WaveImporter(object):
             ('[(<description>, [<paths>])]'). Note that the <filepaths_struct>
             element order is important and saved in the database.
         """
+        order = 0
         for snap_name, snaps in snap_data.items():
             # > create entity
+            order += 1
             snap_struct = {
                 "identifier": self._md5_sum("{0}_{1}_{2}".format(
                     wave_name, sid, snap_name)),
                 "name": snap_name.replace("_", " "),
+                "order": order,
                 "viewer": snaps["viewer"]
             }
             snap_entity, snap_created = self._get_or_create_unique_entity(
