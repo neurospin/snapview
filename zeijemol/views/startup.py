@@ -20,11 +20,32 @@ from cubicweb.predicates import authenticated_user
 from cubicweb.predicates import match_user_groups
 
 
+class ZEIJEMOLNotRaterIndexView(IndexView):
+    """ Class that defines the index view.
+    """
+    __regid__ = "index"
+    __select__ = authenticated_user() & ~match_user_groups(
+        "managers", "moderators")
+    title = _("Index")
+
+    def call(self, **kwargs):
+        """ Create the loggedin 'index' page of our site.
+        """
+        # Format template
+        template = self._cw.vreg.template_env.get_template("startup.logged.jinja2")
+        html = template.render(
+            header_url=self._cw.data_url("creative/img/neurospin.jpg"),
+            moderator=False,
+            waves_progress={})
+        self.w(html)
+
+
 class ZEIJEMOLRaterIndexView(IndexView):
     """ Class that defines the index view.
     """
     __regid__ = "index"
-    __select__ = authenticated_user() and match_user_groups("managers", "raters")
+    __select__ = authenticated_user() & match_user_groups(
+        "managers", "moderators")
     title = _("Index")
     http_cache_manager = NoHTTPCacheManager
 
@@ -63,6 +84,7 @@ class ZEIJEMOLRaterIndexView(IndexView):
         template = self._cw.vreg.template_env.get_template("startup.logged.jinja2")
         html = template.render(
             header_url=self._cw.data_url("creative/img/neurospin.jpg"),
+            moderator=True,
             waves_progress=waves_progress)
         self.w(html)
 
@@ -71,7 +93,7 @@ class ZEIJEMOLIndexView(IndexView):
     """ Class that defines the index view.
     """
     __regid__ = "index"
-    __select__ = ~authenticated_user() or ~match_user_groups("moderators")
+    __select__ = ~authenticated_user()
     title = _("Index")
     templatable = False
     default_message = "Unable to locate the startup page."
@@ -178,4 +200,5 @@ def registration_callback(vreg):
     #vreg.register_and_replace(SnapIndexView, IndexView)
     vreg.register_and_replace(ZEIJEMOLIndexView, IndexView)
     vreg.register(ZEIJEMOLRaterIndexView)
+    vreg.register(ZEIJEMOLNotRaterIndexView)
     vreg.register(PieChart)

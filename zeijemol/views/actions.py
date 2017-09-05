@@ -14,6 +14,8 @@ from cubicweb.web.views.wdoc import HelpAction
 from cubicweb.web.views.wdoc import AboutAction
 from cubicweb.web.views.actions import PoweredByAction
 from cubicweb.web.views.basecomponents import ApplLogo
+from cubicweb.predicates import authenticated_user
+from cubicweb.predicates import match_user_groups
 
 
 ###############################################################################
@@ -61,9 +63,11 @@ class ZEIJEMOLPageFooter(HTMLPageFooter):
         self.w(html)
 
 
-class ZEIJEMOLPageHeader(HTMLPageHeader):
+class ZEIJEMOLRatersPageHeader(HTMLPageHeader):
     __regid__ = "header"
     title = u"Header"
+    __select__ = authenticated_user() & match_user_groups(
+        "managers", "moderators")
 
     def main_header(self, view):
         """ build the top menu with authentification info and the rql box.
@@ -93,11 +97,32 @@ class ZEIJEMOLPageHeader(HTMLPageHeader):
         self.w(html)
 
 
+class ZEIJEMOLPageHeader(HTMLPageHeader):
+    __regid__ = "header"
+    title = u"Header"
+    __select__ = authenticated_user() & ~match_user_groups(
+        "managers", "moderators")
+
+    def main_header(self, view):
+        """ build the top menu with authentification info and the rql box.
+        """
+        # Format template
+        template = self._cw.vreg.template_env.get_template("header.jinja2")
+        html = template.render(
+            anonymous_session=True,
+            dropdown_items={},
+            icons=[],
+            home_url=self._cw.base_url(),
+            logout_url=self._cw.build_url("logout"))
+        self.w(html)
+
+
 def registration_callback(vreg):
 
     # Update the footer
     vreg.register_and_replace(ZEIJEMOLPageFooter, HTMLPageFooter)
-    vreg.register_and_replace(ZEIJEMOLPageHeader, HTMLPageHeader)
+    vreg.register_and_replace(ZEIJEMOLRatersPageHeader, HTMLPageHeader)
+    vreg.register(ZEIJEMOLPageHeader)
     vreg.unregister(HelpAction)
     vreg.unregister(AboutAction)
     vreg.unregister(PoweredByAction)

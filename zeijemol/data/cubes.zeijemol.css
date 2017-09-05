@@ -104,31 +104,7 @@ table#mainLayout td#contentColumn {
     padding: 0 0 0;
 }
 
-.zeijemol-gallery {
-    padding-left: 5%;
-    padding-right: 3%;
-    padding-bottom: 20px;
-    margin-top: 0;
-    padding-top: 50px;
-}
-
-.zeijemol-status {
-    padding-left: 5%;
-    padding-right: 3%;
-    padding-bottom: 20px;
-    margin-top: 0;
-    padding-top: 50px;
-}
-
-.zeijemol-documentation {
-    padding-left: 5%;
-    padding-right: 3%;
-    padding-bottom: 20px;
-    margin-top: 0;
-    padding-top: 50px;
-}
-
-.error_traceback {
+#page {
     padding-left: 5%;
     padding-right: 3%;
     padding-bottom: 20px;
