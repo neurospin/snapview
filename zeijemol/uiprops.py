@@ -22,7 +22,7 @@ STYLESHEETS_PRINT += [
 
 
 JAVASCRIPTS += [
-    data("creative/vendor/jquery.min.js"),
+    data("creative/vendor/jquery/jquery.min.js"),
     data("creative/vendor/bootstrap/js/bootstrap.min.js")
 ]
 
