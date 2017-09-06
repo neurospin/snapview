@@ -12,6 +12,8 @@ import json
 
 # CW import
 from cubicweb.server import hook
+from logilab.common.decorators import monkeypatch
+from cubicweb.dataimport.importer import ExtEntitiesImporter
 
 # Jinja2 import
 from jinja2 import Environment
@@ -51,3 +53,34 @@ class UpdateSource(hook.Hook):
             with self.repo.internal_cnx() as cnx:
                 _create_or_update_ldap_data_source(
                     cnx, configuration, update=True)
+
+
+@monkeypatch(ExtEntitiesImporter)
+def _import_entities(self, ext_entities, queue):
+    """ LDAP synch import groups as external entities and thus the
+    'ExtEntitiesImporter' importer is used.
+
+    To synch LDAP with existing CW groups, check the group existance in
+    CW.
+    """
+    extid2eid = self.extid2eid
+    deferred = {}  # non inlined relations that may be deferred
+    self.import_log.record_debug("importing entities")
+    for ext_entity in self.iter_ext_entities(ext_entities, deferred, queue):
+
+        # Case of groups for LDAP Sync: check group existance
+        if ext_entity.etype == "CWGroup":
+            group_name = ext_entity.values["name"]
+            rql = "Any G Where G is CWGroup, G name '{0}'".format(
+                group_name)
+            if self.store.rql(rql).rowcount > 0:
+                continue
+
+        try:
+            eid = extid2eid[ext_entity.extid]
+        except KeyError:
+            self.prepare_insert_entity(ext_entity)
+        else:
+            if ext_entity.values:
+                self.prepare_update_entity(ext_entity, eid)
+    return deferred
