@@ -96,7 +96,6 @@ class ZEIJEMOLIndexView(IndexView):
     __select__ = ~authenticated_user()
     title = _("Index")
     templatable = False
-    default_message = "Unable to locate the startup page."
 
     def call(self, **kwargs):
         """ Create the anonymous 'index' page of our site.
