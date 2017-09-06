@@ -23,6 +23,10 @@ div#pageContent {
     padding: 0;
 }
 
+input#rql {
+    width: 100%;
+}
+
 header {
     min-width: 100%;
     height: 100%; 

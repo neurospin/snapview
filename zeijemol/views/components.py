@@ -149,6 +149,6 @@ def registration_callback(vreg):
     vreg.register(StatusButton)
     vreg.register(LogOutButton)
     vreg.unregister(BookmarksBox)
-    vreg.unregister(SearchBox)
     vreg.unregister(AnonUserStatusLink)
     vreg.unregister(AuthenticatedUserStatus)
+    vreg.unregister(SearchBox)

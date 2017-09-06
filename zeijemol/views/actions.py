@@ -16,6 +16,10 @@ from cubicweb.web.views.actions import PoweredByAction
 from cubicweb.web.views.basecomponents import ApplLogo
 from cubicweb.predicates import authenticated_user
 from cubicweb.predicates import match_user_groups
+from cubicweb.web.views.basecomponents import RQLInputForm
+
+# Bootstrap import
+from cubes.bootstrap.views.basecomponents import BSRQLInputForm
 
 
 ###############################################################################
@@ -41,7 +45,9 @@ class ZeijemolMainTemplate(TheMainTemplate):
         w(u'<td id="contentColumn">\n')
         components = self._cw.vreg['components']
         rqlcomp = components.select_or_none('rqlinput', self._cw, rset=self.cw_rset)
-        if rqlcomp:
+        if rqlcomp and self._cw.user.matching_groups("managers"):
+            rqlcomp.formdef = rqlcomp.formdef.replace("%(css_class)s", "schiirdor-search")
+            self._cw.add_onload('$(".hamburger").css("top", "40px");')
             rqlcomp.render(w=self.w, view=view)
         msgcomp = components.select_or_none('applmessages', self._cw, rset=self.cw_rset)
         if msgcomp:
@@ -128,3 +134,4 @@ def registration_callback(vreg):
     vreg.unregister(PoweredByAction)
     vreg.unregister(ApplLogo)
     vreg.register_and_replace(ZeijemolMainTemplate, TheMainTemplate)
+    vreg.register_and_replace(BSRQLInputForm, RQLInputForm)
