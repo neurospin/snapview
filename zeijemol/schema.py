@@ -13,11 +13,16 @@ from yams.buildobjs import Boolean
 from yams.buildobjs import Int
 from yams.buildobjs import SubjectRelation
 from cubicweb.schema import ERQLExpression
+from yams import BASE_GROUPS
 
 
 ###############################################################################
 # Modification of the schema
 ###############################################################################
+
+
+BASE_GROUPS.add("moderators")
+
 
 class Wave(EntityType):
     """ An entity used to store QC wave information.
